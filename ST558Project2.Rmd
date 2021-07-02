@@ -1,6 +1,6 @@
 ---
-title: "ST558Project2"
-author: "Alex"
+title: "ST558 Project 2"
+author: "Alex Selwaeh and Zichang Xiang"
 date: "7/1/2021"
 output: html_document
 ---
@@ -9,22 +9,46 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+# Introduction Section
+The purpose of this project is to create predictive models and automate R Markdown reports. The data we will use is the number of Bike-sharing users aggregated on daily basis from the Capital Bikeshare system in 2011 and 2012. In this data set, there are 16 variables that are related to bike rental counts. The variables we will use include season, year (yr), month (mnth), hour (hr), holiday, weekday, workingday, weathersit, windspeed, casual, registered, and count (cnt). Since some of our predictors are categorical and our response is count, we will use the generalized linear model to predict the response.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+# Data
+```{r message=FALSE}
+#load packages
+library(readr)
+library(dplyr)
 ```
 
-## Including Plots
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r message=FALSE}
+#read in data
+day <- read_csv("day.csv")
+day
+#data for Monday
+Mon <- day %>% filter(weekday == 1)
+Mon
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+#split data set into training and test sets
+set.seed(1)
+train <- sample(1:nrow(Mon), size = nrow(Mon)*0.7)
+test <- dplyr::setdiff(1:nrow(Mon), train)
+
+train <- Mon[train, ]
+test <- Mon[test, ]
+train
+test
+```
+
+# Summarizations
+```{r}
+
+```
+
+# Modeling
+```{r}
+
+```
+
