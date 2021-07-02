@@ -5,11 +5,5 @@ models and automating Markdown reports.
 List of R Packages used :   
 
 
-Links to the generated analysis:  
-
-
-Code used to create the analysis from a single .Rmd file:  
-
-
 
 
