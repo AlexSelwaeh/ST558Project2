@@ -2,14 +2,16 @@
 title: "ST558 Project 2"
 author: "Alex Selwaeh and Zichang Xiang"
 date: "7/1/2021"
-output: html_document
+output: 
+params: 
+      dow: 1
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Introduction Section
+# Introduction Section  
 The purpose of this project is to create predictive models and automate R Markdown reports. The data we will use is the number of Bike-sharing users aggregated on daily basis from the Capital Bikeshare system in 2011 and 2012. In this data set, there are 16 variables that are related to bike rental counts. The variables we will use include season, year (yr), month (mnth), hour (hr), holiday, weekday, workingday, weathersit, windspeed, casual, registered, and count (cnt). Since some of our predictors are categorical and our response is count, we will use the generalized linear model to predict the response.
 
 # Data
@@ -22,22 +24,22 @@ library(dplyr)
 
 ```{r message=FALSE}
 #read in data
-day <- read_csv("day.csv")
-day
+dayData <- read_csv("day.csv")
+dayData
 #data for Monday
-Mon <- day %>% filter(weekday == 1)
-Mon
+MonData <- dayData %>% filter(weekday == params$dow)
+MonData
 ```
 
 
 ```{r}
 #split data set into training and test sets
 set.seed(1)
-train <- sample(1:nrow(Mon), size = nrow(Mon)*0.7)
-test <- dplyr::setdiff(1:nrow(Mon), train)
+train <- sample(1:nrow(MonData), size = nrow(MonData)*0.7)
+test <- dplyr::setdiff(1:nrow(MonData), train)
 
-train <- Mon[train, ]
-test <- Mon[test, ]
+train <- MonData[train, ]
+test <- MonData[test, ]
 train
 test
 ```

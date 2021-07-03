@@ -178,11 +178,13 @@ pre code {
 <div id="data" class="section level1">
 <h1>Data</h1>
 <pre class="r"><code>#load packages
-library(readr)
-library(dplyr)</code></pre>
+library(readr)</code></pre>
+<pre><code>## Warning: package &#39;readr&#39; was built under R version 4.0.5</code></pre>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 4.0.5</code></pre>
 <pre class="r"><code>#read in data
-day &lt;- read_csv(&quot;day.csv&quot;)
-day</code></pre>
+dayData &lt;- read_csv(&quot;day.csv&quot;)
+dayData</code></pre>
 <pre><code>## # A tibble: 731 x 16
 ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
 ##      &lt;dbl&gt; &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
@@ -196,11 +198,11 @@ day</code></pre>
 ##  8       8 2011-01-08      1     0     1       0       6          0          2
 ##  9       9 2011-01-09      1     0     1       0       0          0          1
 ## 10      10 2011-01-10      1     0     1       0       1          1          1
-## # … with 721 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
+## # ... with 721 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
 ## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
 <pre class="r"><code>#data for Monday
-Mon &lt;- day %&gt;% filter(weekday == 1)
-Mon</code></pre>
+MonData &lt;- dayData %&gt;% filter(weekday == params$dow)
+MonData</code></pre>
 <pre><code>## # A tibble: 105 x 16
 ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
 ##      &lt;dbl&gt; &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
@@ -214,15 +216,15 @@ Mon</code></pre>
 ##  8      52 2011-02-21      1     0     2       1       1          0          2
 ##  9      59 2011-02-28      1     0     2       0       1          1          2
 ## 10      66 2011-03-07      1     0     3       0       1          1          1
-## # … with 95 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
+## # ... with 95 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
 ## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
 <pre class="r"><code>#split data set into training and test sets
 set.seed(1)
-train &lt;- sample(1:nrow(Mon), size = nrow(Mon)*0.7)
-test &lt;- dplyr::setdiff(1:nrow(Mon), train)
+train &lt;- sample(1:nrow(MonData), size = nrow(MonData)*0.7)
+test &lt;- dplyr::setdiff(1:nrow(MonData), train)
 
-train &lt;- Mon[train, ]
-test &lt;- Mon[test, ]
+train &lt;- MonData[train, ]
+test &lt;- MonData[test, ]
 train</code></pre>
 <pre><code>## # A tibble: 73 x 16
 ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
@@ -237,7 +239,7 @@ train</code></pre>
 ##  8     570 2012-07-23      3     1     7       0       1          1          1
 ##  9     409 2012-02-13      1     1     2       0       1          1          1
 ## 10     353 2011-12-19      4     0    12       0       1          1          1
-## # … with 63 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
+## # ... with 63 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
 ## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
 <pre class="r"><code>test</code></pre>
 <pre><code>## # A tibble: 32 x 16
@@ -253,7 +255,7 @@ train</code></pre>
 ##  8     101 2011-04-11      2     0     4       0       1          1          2
 ##  9     108 2011-04-18      2     0     4       0       1          1          1
 ## 10     129 2011-05-09      2     0     5       0       1          1          1
-## # … with 22 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
+## # ... with 22 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
 ## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
 </div>
 <div id="summarizations" class="section level1">

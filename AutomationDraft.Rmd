@@ -1,0 +1,37 @@
+---
+title: "Project 2"
+author: "Alex Selwaeh and Zichang Xiang"
+date: "7/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Automation starts here / This is just a draft to finalize once project is finalized    
+```{r}
+#get unique days / might need to convert dayIDs into literal days to match the output link
+dayIDs <- unique(dayData$weekday)
+
+#create filenames / This will be updated tio a link output on rmd once project is finalized and ready to automate  
+output_file <- paste0("The analysis for [",dayIDs," is available here](",dayIDs,"Analysis.html)")
+
+#create a list for each team with just the day parameter
+params = lapply(dayIDs, FUN = function(x){list(dayofweek = x)})
+
+
+#put into a data frame 
+reports <- tibble(output_file, params)
+reports
+```
+
+
+```{r}
+library(rmarkdown)
+#need to use x[[1]] to get at elements since tibble doesn't simplify
+apply(reports, MARGIN = 1, 
+            FUN = function(x){
+                render(input = "ST558Project2.Rmd", output_file = x[[1]], params = x[[2]])
+                })
+```
