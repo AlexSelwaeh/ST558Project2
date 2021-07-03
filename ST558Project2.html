@@ -200,66 +200,96 @@ dayData</code></pre>
 ## 10      10 2011-01-10      1     0     1       0       1          1          1
 ## # ... with 721 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
 ## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
-<pre class="r"><code>#data for Monday
-MonData &lt;- dayData %&gt;% filter(weekday == params$dow)
-MonData</code></pre>
-<pre><code>## # A tibble: 105 x 16
+<pre class="r"><code>status&lt;-vector()
+
+for (i in seq_len(nrow(dayData))){
+  if(dayData$weekday[i] == 1){
+    status[i] &lt;- &quot;Monday&quot;
+  } else if (dayData$weekday[i] == 2){
+    status[i] &lt;- &quot;Tuesday&quot;
+  } else if (dayData$weekday[i] == 3){
+    status[i] &lt;- &quot;Wednesday&quot;
+  } else if (dayData$weekday[i] == 4){
+    status[i] &lt;- &quot;Thursday&quot;
+  } else if (dayData$weekday[i] == 5){
+    status[i] &lt;- &quot;Friday&quot;
+  } else if (dayData$weekday[i] == 6){
+    status[i] &lt;- &quot;Saturday&quot;
+  } else {
+    status[i] &lt;- &quot;Sunday&quot;
+  }
+}
+
+dayData$status &lt;- status
+#data for Monday
+paramsData &lt;- dayData %&gt;% filter(status == params$dow)
+paramsData</code></pre>
+<pre><code>## # A tibble: 104 x 17
 ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
 ##      &lt;dbl&gt; &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
-##  1       3 2011-01-03      1     0     1       0       1          1          1
-##  2      10 2011-01-10      1     0     1       0       1          1          1
-##  3      17 2011-01-17      1     0     1       1       1          0          2
-##  4      24 2011-01-24      1     0     1       0       1          1          1
-##  5      31 2011-01-31      1     0     1       0       1          1          2
-##  6      38 2011-02-07      1     0     2       0       1          1          1
-##  7      45 2011-02-14      1     0     2       0       1          1          1
-##  8      52 2011-02-21      1     0     2       1       1          0          2
-##  9      59 2011-02-28      1     0     2       0       1          1          2
-## 10      66 2011-03-07      1     0     3       0       1          1          1
-## # ... with 95 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
-## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
+##  1       4 2011-01-04      1     0     1       0       2          1          1
+##  2      11 2011-01-11      1     0     1       0       2          1          2
+##  3      18 2011-01-18      1     0     1       0       2          1          2
+##  4      25 2011-01-25      1     0     1       0       2          1          2
+##  5      32 2011-02-01      1     0     2       0       2          1          2
+##  6      39 2011-02-08      1     0     2       0       2          1          1
+##  7      46 2011-02-15      1     0     2       0       2          1          1
+##  8      53 2011-02-22      1     0     2       0       2          1          1
+##  9      60 2011-03-01      1     0     3       0       2          1          1
+## 10      67 2011-03-08      1     0     3       0       2          1          1
+## # ... with 94 more rows, and 8 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
+## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;,
+## #   status &lt;chr&gt;</code></pre>
 <pre class="r"><code>#split data set into training and test sets
 set.seed(1)
-train &lt;- sample(1:nrow(MonData), size = nrow(MonData)*0.7)
-test &lt;- dplyr::setdiff(1:nrow(MonData), train)
+train &lt;- sample(1:nrow(paramsData), size = nrow(paramsData)*0.7)
+test &lt;- dplyr::setdiff(1:nrow(paramsData), train)
 
-train &lt;- MonData[train, ]
-test &lt;- MonData[test, ]
+train &lt;- paramsData[train, ]
+test &lt;- paramsData[test, ]
 train</code></pre>
-<pre><code>## # A tibble: 73 x 16
+<pre><code>## # A tibble: 72 x 17
 ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
 ##      &lt;dbl&gt; &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
-##  1     472 2012-04-16      2     1     4       1       1          0          1
-##  2     269 2011-09-26      4     0     9       0       1          1          2
-##  3       3 2011-01-03      1     0     1       0       1          1          1
-##  4     234 2011-08-22      3     0     8       0       1          1          1
-##  5     605 2012-08-27      3     1     8       0       1          1          1
-##  6     297 2011-10-24      4     0    10       0       1          1          1
-##  7      94 2011-04-04      2     0     4       0       1          1          1
-##  8     570 2012-07-23      3     1     7       0       1          1          1
-##  9     409 2012-02-13      1     1     2       0       1          1          1
-## 10     353 2011-12-19      4     0    12       0       1          1          1
-## # ... with 63 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
-## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
+##  1     473 2012-04-17      2     1     4       0       2          1          1
+##  2     270 2011-09-27      4     0     9       0       2          1          2
+##  3       4 2011-01-04      1     0     1       0       2          1          1
+##  4     235 2011-08-23      3     0     8       0       2          1          1
+##  5     606 2012-08-28      3     1     8       0       2          1          1
+##  6     298 2011-10-25      4     0    10       0       2          1          1
+##  7      95 2011-04-05      2     0     4       0       2          1          2
+##  8     571 2012-07-24      3     1     7       0       2          1          1
+##  9     410 2012-02-14      1     1     2       0       2          1          2
+## 10     354 2011-12-20      4     0    12       0       2          1          2
+## # ... with 62 more rows, and 8 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
+## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;,
+## #   status &lt;chr&gt;</code></pre>
 <pre class="r"><code>test</code></pre>
-<pre><code>## # A tibble: 32 x 16
+<pre><code>## # A tibble: 32 x 17
 ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
 ##      &lt;dbl&gt; &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
-##  1      17 2011-01-17      1     0     1       1       1          0          2
-##  2      24 2011-01-24      1     0     1       0       1          1          1
-##  3      31 2011-01-31      1     0     1       0       1          1          2
-##  4      52 2011-02-21      1     0     2       1       1          0          2
-##  5      59 2011-02-28      1     0     2       0       1          1          2
-##  6      66 2011-03-07      1     0     3       0       1          1          1
-##  7      80 2011-03-21      2     0     3       0       1          1          2
-##  8     101 2011-04-11      2     0     4       0       1          1          2
-##  9     108 2011-04-18      2     0     4       0       1          1          1
-## 10     129 2011-05-09      2     0     5       0       1          1          1
-## # ... with 22 more rows, and 7 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
-## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;</code></pre>
+##  1      18 2011-01-18      1     0     1       0       2          1          2
+##  2      25 2011-01-25      1     0     1       0       2          1          2
+##  3      32 2011-02-01      1     0     2       0       2          1          2
+##  4      53 2011-02-22      1     0     2       0       2          1          1
+##  5      60 2011-03-01      1     0     3       0       2          1          1
+##  6      67 2011-03-08      1     0     3       0       2          1          1
+##  7      81 2011-03-22      2     0     3       0       2          1          1
+##  8     102 2011-04-12      2     0     4       0       2          1          2
+##  9     109 2011-04-19      2     0     4       0       2          1          2
+## 10     130 2011-05-10      2     0     5       0       2          1          1
+## # ... with 22 more rows, and 8 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
+## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;,
+## #   status &lt;chr&gt;</code></pre>
 </div>
 <div id="summarizations" class="section level1">
 <h1>Summarizations</h1>
+<pre class="r"><code>#one way
+table(train$season)</code></pre>
+<pre><code>## 
+##  1  2  3  4 
+## 13 21 18 20</code></pre>
+<p>```</p>
 </div>
 <div id="modeling" class="section level1">
 <h1>Modeling</h1>

@@ -4,7 +4,7 @@ author: "Alex Selwaeh and Zichang Xiang"
 date: "7/1/2021"
 output: 
 params: 
-      dow: 1
+      dow: "Tuesday"
 ---
 
 ```{r setup, include=FALSE}
@@ -26,31 +26,62 @@ library(dplyr)
 #read in data
 dayData <- read_csv("day.csv")
 dayData
+status<-vector()
+
+for (i in seq_len(nrow(dayData))){
+  if(dayData$weekday[i] == 1){
+    status[i] <- "Monday"
+  } else if (dayData$weekday[i] == 2){
+    status[i] <- "Tuesday"
+  } else if (dayData$weekday[i] == 3){
+    status[i] <- "Wednesday"
+  } else if (dayData$weekday[i] == 4){
+    status[i] <- "Thursday"
+  } else if (dayData$weekday[i] == 5){
+    status[i] <- "Friday"
+  } else if (dayData$weekday[i] == 6){
+    status[i] <- "Saturday"
+  } else {
+    status[i] <- "Sunday"
+  }
+}
+
+dayData$status <- status
 #data for Monday
-MonData <- dayData %>% filter(weekday == params$dow)
-MonData
+paramsData <- dayData %>% filter(status == params$dow)
+paramsData
 ```
 
 
 ```{r}
 #split data set into training and test sets
 set.seed(1)
-train <- sample(1:nrow(MonData), size = nrow(MonData)*0.7)
-test <- dplyr::setdiff(1:nrow(MonData), train)
+train <- sample(1:nrow(paramsData), size = nrow(paramsData)*0.7)
+test <- dplyr::setdiff(1:nrow(paramsData), train)
 
-train <- MonData[train, ]
-test <- MonData[test, ]
+train <- paramsData[train, ]
+test <- paramsData[test, ]
 train
 test
 ```
 
 # Summarizations
 ```{r}
+#one way table to check how many days were counted as a day off for that specific day
+if(params$dow %in% c("Monday", "Tuesday","Wednesday","Thursday","Friday")){
+table(train$workingday)  
+}
+
 
 ```
 
 # Modeling
 ```{r}
+
+glm1Fit <- lm(cnt ~ casual*registered, data = train)
+glm2Fit <- lm(cnt ~ casual:registered, data = train)
+glm3Fit <- lm(cnt ~ casual+registered+I(casual^2)+I(registered^2), data = train)
+glm4Fit <- lm(cnt ~ casual+registered, data = train)
 
 ```
 
