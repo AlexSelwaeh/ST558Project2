@@ -55,6 +55,9 @@ paramsData <- paramsData %>%
   # Add columns to represent the categorical columns as mentioned in READ.ME.
   mutate(SeasonType = ifelse(season == 1, "spring", ifelse(season == 2, "summer", ifelse(season == 3, "fall", "winter"))), yearType= ifelse(yr == 0, "2011", "2012"), workingdayType= ifelse(workingday == 1, "Working Day", "Non WorkingDay"),weathersitType= ifelse(weathersit == 1, "Clear", ifelse(weathersit == 2, "Mist", ifelse(weathersit == 3, "Light Snow", "HeavyRain"))))
 
+#convert month from numerical to categorical charcter  
+paramsData$mnth1 <- as.character(paramsData$mnth)
+
 ```
 
 
@@ -184,17 +187,90 @@ plot_grid(plot21, plot22, plot23,ncol=3)
 
 ```
 
+scatterplot with the number of users on the y-axis and the month on the x-axis, We
+can inspect the trend of users across months using this plot.
+```{r}
+plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot31
+
+plot32 <- ggplot(paramsData, aes(x = mnth, y = registered)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot32
+
+plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot33
+
+plot_grid(plot31, plot32, plot33,ncol=3)
+
+```
 
 # Modeling
 ```{r}
 
-glm1Fit <- lm(cnt ~ casual*registered, data = train)
-glm2Fit <- lm(cnt ~ casual:registered, data = train)
-glm3Fit <- lm(cnt ~ casual+registered+I(casual^2)+I(registered^2), data = train)
+fit1 <- lm(cnt ~ windspeed + hum + atemp + temp + weathersit + workingday + holiday + mnth + yr + season, data = train)
+fit1
+# use anova table to choose the significant variables and reduce the model selection
+anova(fit1)
+# anova reveals that season,yr,temp and atemp has a p-value of significance, therefore we will choose only these 4 variables in our analysis.
+summary(fit1)
 
-glm4Fit <- lm(cnt ~ season*mnth, data = train)
-glm5Fit <- lm(cnt ~ season:mnth, data = train)
-glm6Fit <- lm(cnt ~ season+mnth+I(season^2)+I(mnth^2), data = train)
+# start reducing fit1 by choosing the most significant variables based on p-value less than 10% considered highly significant
+fit2 <- lm(cnt ~ season+yr+temp+atemp+windspeed+mnth , data = train)
+fit2
+anova(fit2)
+summary(fit2)
 
+# Since in fit2 the anova revealed that atemp is not as highly significant as the rest of the variables in fit2, therefore reduce more
+#also note that temp and atemp are highly correlated predictors causing multicollinearity therefore it's safe to drop atemp
+fit3 <- lm(cnt ~ season+yr+temp+windspeed+mnth , data = train)
+fit3
+anova(fit3)
+# the data shows that we are interested in the following variables
+#temp,yr,season, windspeed,mnth and cnt as the response
+
+#Explore the full chosen data correlations
+corrData <- train %>% select(cnt,season,yr,temp,windspeed,mnth)
+GGally::ggpairs(corrData)
+#Correlation data table shows that wind speed and nth have the lowest correlation when compared with temperature, year and season. Therefore, we will reduce our variables to temp,yr,season.
+
+
+#Now start exploring among these 5 variables for the best fit model
+glm1Fit <- lm(cnt ~ season+yr+temp, data = train)
+glm2Fit <- lm(cnt ~ temp:yr, data = train)
+glm3Fit <- lm(cnt ~ temp:season, data = train)
+glm4Fit <- lm(cnt ~ temp*yr*season, data = train)
+glm5Fit <- lm(cnt ~ temp+yr+I(yr^2), data = train)
+
+library(modelr)
+
+model <- c(("glm1Fit"),("glm2Fit"),("glm3Fit"),("glm4Fit"),("glm5Fit"))
+  
+trainMSE <- c(rmse(glm1Fit, train),
+rmse(glm2Fit, train),
+rmse(glm3Fit, train),
+rmse(glm4Fit, train),
+rmse(glm4Fit, train)
+)
+
+testMSE <- c(rmse(glm1Fit, test),
+rmse(glm2Fit, test),
+rmse(glm3Fit, test),
+rmse(glm4Fit, test),
+rmse(glm5Fit, test)
+)
+
+
+MSEdf <- data.frame(model, trainMSE, testMSE)
+MSEdf <- MSEdf %>% arrange(testMSE)
+MSEdf
+
+# therefore, this is the chosen model glm4Fit
+#glm4Fit <- lm(cnt ~ temp*yr*season, data = train)
+#might explore more on top 3 fits which are glm4Fit,glm1it,glm5Fit
 ```
 
