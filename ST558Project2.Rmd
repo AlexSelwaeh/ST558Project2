@@ -101,12 +101,12 @@ knitr::kable(seasonSummary,
 
 ``` 
 ## Plots  
-Box plot with the total number of users on the y-axis and the season on the x-axis - We can inspect the trend of total users across seasons using this plot.    
+Box plot with the of users on the y-axis(wether casual,registered or total users) and the season on the x-axis - We can inspect the trend of users across seasons using these plots. Notice that the biggest contribution towards total number of users comes from the registered users which is expected. The most active seasons for that `r params$dow` is the fall season and the least active season is the spring.  
 
 ```{r}
 library(ggplot2)
-
-plot1 <- ggplot(train, aes(SeasonType,
+library(cowplot)
+plot11 <- ggplot(train, aes(SeasonType,
                                    cnt,
                                    color=cnt)) +
   geom_boxplot() + 
@@ -116,23 +116,74 @@ plot1 <- ggplot(train, aes(SeasonType,
   scale_x_discrete("Season") + scale_y_continuous("Total Users") +
   ggtitle("Total Users by Season") + theme(legend.position="none")
 
-plot1
+plot11
+
+plot12 <- ggplot(train, aes(SeasonType,
+                                   casual,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Casual Users") +
+  ggtitle("Casual Users by Season") + theme(legend.position="none")
+
+plot12
+
+plot13 <- ggplot(train, aes(SeasonType,
+                                   registered,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Registered Users") +
+  ggtitle("Registered Users by Season") + theme(legend.position="none")
+
+plot13
+
+plot_grid(plot13, plot12,plot11, ncol=3)
 
 ```
 
-Scatter plot with the total number of users on the y-axis and the temperature on the x-axis - We can inspect the trend of total users across temperature using this plot.  
+Scatter plot with the total number of users on the y-axis and the (temperature, wind speed, humidity on the x-axis - We can inspect the trend of total users across these variables and notice that humidity almost has a negligible effect on total number of users.Also it's noticeable that the wind speed has a negative effect on the total number of users where as the wind speed increases, the number of users will decrease.   
 
 ```{r}
-g <- ggplot(train, aes(x = temp, y = cnt)) 
-g + geom_point() + geom_smooth()
+
+plot21 <- ggplot(train, aes(temp,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Temprature") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Temprature. vs. Total Users")
+plot21
+
+plot22 <- ggplot(train, aes(windspeed,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Wind Speed") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Wind Speed vs. Total Users")
+plot22
+
+plot23 <- ggplot(train, aes(hum,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Humidity") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Humidity vs. Total Users")
+plot23
+
+plot_grid(plot21, plot22, plot23,ncol=3)
+
 ```
 
-Scatterplot with the number of casual users on the y-axis and the month on the x-axis - We can inspect the trend of users across months using this plot.  
-```{r}
-g <- ggplot(train, aes(x = mnth, y = casual)) 
-g + geom_point() + geom_smooth()
-
-```
 
 # Modeling
 ```{r}
