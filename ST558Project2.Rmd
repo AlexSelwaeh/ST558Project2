@@ -49,7 +49,11 @@ for (i in seq_len(nrow(dayData))){
 dayData$status <- status
 #data for Monday
 paramsData <- dayData %>% filter(status == params$dow)
-paramsData
+
+#Create columns to represent the categorical columns as mentioned in READ.ME
+paramsData <- paramsData %>%
+  # Add columns to represent the categorical columns as mentioned in READ.ME.
+  mutate(SeasonType = ifelse(season == 1, "spring", ifelse(season == 2, "summer", ifelse(season == 3, "fall", "winter"))), yearType= ifelse(yr == 0, "2011", "2012"), workingdayType= ifelse(workingday == 1, "Working Day", "Non WorkingDay"),weathersitType= ifelse(weathersit == 1, "Clear", ifelse(weathersit == 2, "Mist", ifelse(weathersit == 3, "Light Snow", "HeavyRain"))))
 
 ```
 
@@ -62,6 +66,8 @@ test <- dplyr::setdiff(1:nrow(paramsData), train)
 
 train <- paramsData[train, ]
 test <- paramsData[test, ]
+
+
 train
 test
 ```
@@ -70,15 +76,33 @@ test
 
 ## Summary Statistics  
 ```{r}
-train %>% group_by(season) %>% 
-    summarise(avg = mean(cnt), med = median(cnt), var = var(cnt),stdev=sd(cnt))
+library(knitr)
+# Create a table of summary stats.
+seasonSummary <- train %>% 
+  # Select the seasone and cnt columns.
+  select(SeasonType, cnt) %>%
+  # Group by season
+  group_by(SeasonType) %>%
+  # Get summary statistics for total users by season.
+  summarize("Min." = min(cnt),
+            "1st Quartile" = quantile(cnt, 0.25),
+            "Median" = quantile(cnt, 0.5),
+            "Mean" = mean(cnt),
+            "3rd Quartile" = quantile(cnt, 0.75),
+            "Max" = max(cnt),
+            "Std. Dev." = sd(cnt)
+            )
 
-train %>% group_by(mnth) %>% 
-    summarise(avg = mean(cnt), med = median(cnt), var = var(cnt), stdev=sd(cnt)) 
+# Display a table of the summary stats.
+knitr::kable(seasonSummary, 
+             caption=paste("Summary Statistics for total users",
+                           "By Season"),
+             digits=2)
 
 ``` 
 
 ## Contingency tables  
+
 
 
 
@@ -87,8 +111,19 @@ Scatter plot with the total number of users on the y-axis and the season on the 
 
 ```{r}
 library(ggplot2)
-g <- ggplot(train, aes(x = season, y = cnt)) 
-g + geom_point() 
+
+plot2 <- ggplot(train, aes(SeasonType,
+                                   cnt,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Total Users") +
+  ggtitle("Ttoal Users by Season") + theme(legend.position="none")
+
+plot2
+
 ```
 
 Scatter plot with the total number of users on the y-axis and the temperature on the x-axis - We can inspect the trend of total users across temperature using this plot.  
