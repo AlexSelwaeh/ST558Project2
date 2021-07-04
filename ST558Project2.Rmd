@@ -4,7 +4,7 @@ author: "Alex Selwaeh and Zichang Xiang"
 date: "7/1/2021"
 output: 
 params: 
-      dow: "Tuesday"
+      dow: "Monday"
 ---
 
 ```{r setup, include=FALSE}
@@ -50,6 +50,7 @@ dayData$status <- status
 #data for Monday
 paramsData <- dayData %>% filter(status == params$dow)
 paramsData
+
 ```
 
 
@@ -65,15 +66,46 @@ train
 test
 ```
 
-# Summarizations
-```{r}
-#one way table to check how many days were counted as a day off for that specific day
-if(params$dow %in% c("Monday", "Tuesday","Wednesday","Thursday","Friday")){
-table(train$workingday)  
-}
+# Summarizations  
 
+## Summary Statistics  
+```{r}
+train %>% group_by(season) %>% 
+    summarise(avg = mean(cnt), med = median(cnt), var = var(cnt),stdev=sd(cnt))
+
+train %>% group_by(mnth) %>% 
+    summarise(avg = mean(cnt), med = median(cnt), var = var(cnt), stdev=sd(cnt)) 
+
+``` 
+
+## Contingency tables  
+
+
+
+## Plots  
+Scatter plot with the total number of users on the y-axis and the season on the x-axis - We can inspect the trend of total users across seasons using this plot.    
+
+```{r}
+library(ggplot2)
+g <- ggplot(train, aes(x = season, y = cnt)) 
+g + geom_point() 
+```
+
+Scatter plot with the total number of users on the y-axis and the temperature on the x-axis - We can inspect the trend of total users across temperature using this plot.  
+
+```{r}
+g <- ggplot(train, aes(x = temp, y = cnt)) 
+g + geom_point() + geom_smooth()
+```
+
+Scatterplot with the number of casual users on the y-axis and the month on the x-axis - We can inspect the trend of users across months using this plot.  
+```{r}
+g <- ggplot(train, aes(x = mnth, y = casual)) 
+g + geom_point() + geom_smooth()
 
 ```
+
+
 
 # Modeling
 ```{r}
@@ -81,7 +113,10 @@ table(train$workingday)
 glm1Fit <- lm(cnt ~ casual*registered, data = train)
 glm2Fit <- lm(cnt ~ casual:registered, data = train)
 glm3Fit <- lm(cnt ~ casual+registered+I(casual^2)+I(registered^2), data = train)
-glm4Fit <- lm(cnt ~ casual+registered, data = train)
+
+glm4Fit <- lm(cnt ~ season*mnth, data = train)
+glm5Fit <- lm(cnt ~ season:mnth, data = train)
+glm6Fit <- lm(cnt ~ season+mnth+I(season^2)+I(mnth^2), data = train)
 
 ```
 
