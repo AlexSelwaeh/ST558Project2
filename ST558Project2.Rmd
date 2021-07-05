@@ -2,8 +2,8 @@
 title: "ST558 Project 2"
 author: "Alex Selwaeh and Zichang Xiang"
 date: "7/1/2021"
-output: html_document
-params:
+output: html_document  
+params: 
       dow: "Monday"
 ---
 
@@ -11,7 +11,9 @@ params:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ## Introduction Section
+
 The purpose of this project is to create predictive models and automate R Markdown reports. The data we will use is the number of Bike-sharing users aggregated on daily basis from the Capital Bikeshare system in 2011 and 2012. In this data set, there are 16 variables that are related to bike rental counts. The variables we will use include season, year (yr), month (mnth), hour (hr), holiday, weekday, workingday, weathersit, windspeed, casual, registered, and count (cnt). Since some of our predictors are categorical and our response is count, we will use the generalized linear model to predict the response.
 
 ## Data
@@ -35,11 +37,13 @@ library(gbm)
 dayData <- read_csv("day.csv")
 dayData
 
+
 #check for missing values
 anyNA(dayData)
 
 #create for loop to subset data for each weekday
 status<-vector()
+
 for (i in seq_len(nrow(dayData))){
   if(dayData$weekday[i] == 1){
     status[i] <- "Monday"
@@ -57,10 +61,10 @@ for (i in seq_len(nrow(dayData))){
     status[i] <- "Sunday"
   }
 }
+
 dayData$status <- status
 #data for Monday
 paramsData <- dayData %>% filter(status == params$dow)
-paramsData
 
 #Create columns to represent the categorical columns as mentioned in READ.ME
 paramsData <- paramsData %>%
@@ -78,17 +82,19 @@ paramsData$mnth1 <- as.character(paramsData$mnth)
 set.seed(1)
 train <- sample(1:nrow(paramsData), size = nrow(paramsData)*0.7)
 test <- dplyr::setdiff(1:nrow(paramsData), train)
+
 train <- paramsData[train, ]
 test <- paramsData[test, ]
+
 train
 test
 ```
+
 
 ## Summarizations
 
 ### Summary Statistics
 
-#### Five Numbers
 Summary statistics give us a quick look of our data. For our case, we can find out the average number of bike rentals per season.
 
 ```{r}
@@ -107,6 +113,7 @@ seasonSummary <- train %>%
             "Max" = max(cnt),
             "Std. Dev." = sd(cnt)
             )
+
 # Display a table of the summary stats.
 knitr::kable(seasonSummary, 
              caption=paste("Summary Statistics for total users",
@@ -285,9 +292,8 @@ plot_grid(plot31, plot32, plot33,ncol=3)
 
 ## Modeling
 
-### Modeling of the first group member
 ```{r}
-
+### Modeling of the first group member
 fit1 <- lm(cnt ~ windspeed + hum + atemp + temp + weathersit + workingday + holiday + mnth + yr + season, data = train)
 fit1
 # use anova table to choose the significant variables and reduce the model selection
@@ -344,7 +350,6 @@ MSEdf
 ### Modeling of the second group member
 
 ```{r}
-
 #fitting linear regression model
 fit1 <- train(cnt ~ season + yr + mnth  + weathersit + temp + atemp + windspeed, 
               data = train,
@@ -383,17 +388,15 @@ fit5 <- train(cnt ~ season + I(yr)^2 + weathersit * atemp + temp,
 
 #compare each model
 data.frame(t(fit1$results), t(fit2$results), t(fit3$results), t(fit4$results), t(fit5$results))
-#final model: fit4: lm(cnt ~ season + I(yr)^2 + weathersit + temp + atemp, data = train)
+#final model: fit3: lm(cnt ~ season + yr + weathersit + temp + atemp, data = train)
 #check the fit
-lmPred <- predict(fit4, newdata = test)
+lmPred <- predict(fit3, newdata = test)
 lmfit <- postResample(lmPred, obs = test$cnt)
 lmfit[1]
 
 #fitting boosted tree model for counts
 set.seed(1)
-train$yrsquare <- (train$yr)^2
-test$yrsquare <- (test$yr)^2
-boostFit <- gbm(cnt ~ season + yrsquare + weathersit + atemp + temp, data = train, 
+boostFit <- gbm(cnt ~ season + yr + weathersit + temp + atemp, data = train, 
                 distribution = "poisson", n.trees = 10000, 
                 shrinkage = 0.01, interaction.depth = 4, cv.folds = 10)
 boostPred <- predict(boostFit, newdata = dplyr::select(test, -cnt), n.trees = 10000)
@@ -401,5 +404,6 @@ boostPred <- predict(boostFit, newdata = dplyr::select(test, -cnt), n.trees = 10
 #view Root MSE values
 boostRMSE <- sqrt(mean((boostPred - test$cnt)^2))
 boostRMSE
+
 ```
 

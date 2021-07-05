@@ -210,6 +210,7 @@ anyNA(dayData)</code></pre>
 <pre><code>## [1] FALSE</code></pre>
 <pre class="r"><code>#create for loop to subset data for each weekday
 status&lt;-vector()
+
 for (i in seq_len(nrow(dayData))){
   if(dayData$weekday[i] == 1){
     status[i] &lt;- &quot;Monday&quot;
@@ -227,27 +228,12 @@ for (i in seq_len(nrow(dayData))){
     status[i] &lt;- &quot;Sunday&quot;
   }
 }
+
 dayData$status &lt;- status
 #data for Monday
 paramsData &lt;- dayData %&gt;% filter(status == params$dow)
-paramsData</code></pre>
-<pre><code>## # A tibble: 105 x 17
-##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
-##      &lt;dbl&gt; &lt;date&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;      &lt;dbl&gt;      &lt;dbl&gt;
-##  1       3 2011-01-03      1     0     1       0       1          1          1
-##  2      10 2011-01-10      1     0     1       0       1          1          1
-##  3      17 2011-01-17      1     0     1       1       1          0          2
-##  4      24 2011-01-24      1     0     1       0       1          1          1
-##  5      31 2011-01-31      1     0     1       0       1          1          2
-##  6      38 2011-02-07      1     0     2       0       1          1          1
-##  7      45 2011-02-14      1     0     2       0       1          1          1
-##  8      52 2011-02-21      1     0     2       1       1          0          2
-##  9      59 2011-02-28      1     0     2       0       1          1          2
-## 10      66 2011-03-07      1     0     3       0       1          1          1
-## # … with 95 more rows, and 8 more variables: temp &lt;dbl&gt;, atemp &lt;dbl&gt;,
-## #   hum &lt;dbl&gt;, windspeed &lt;dbl&gt;, casual &lt;dbl&gt;, registered &lt;dbl&gt;, cnt &lt;dbl&gt;,
-## #   status &lt;chr&gt;</code></pre>
-<pre class="r"><code>#Create columns to represent the categorical columns as mentioned in READ.ME
+
+#Create columns to represent the categorical columns as mentioned in READ.ME
 paramsData &lt;- paramsData %&gt;%
   # Add columns to represent the categorical columns as mentioned in READ.ME.
   mutate(SeasonType = ifelse(season == 1, &quot;spring&quot;, ifelse(season == 2, &quot;summer&quot;, ifelse(season == 3, &quot;fall&quot;, &quot;winter&quot;))), yearType= ifelse(yr == 0, &quot;2011&quot;, &quot;2012&quot;), workingdayType= ifelse(workingday == 1, &quot;Working Day&quot;, &quot;Non WorkingDay&quot;),weathersitType= ifelse(weathersit == 1, &quot;Clear&quot;, ifelse(weathersit == 2, &quot;Mist&quot;, ifelse(weathersit == 3, &quot;Light Snow&quot;, &quot;HeavyRain&quot;))))
@@ -258,8 +244,10 @@ paramsData$mnth1 &lt;- as.character(paramsData$mnth)</code></pre>
 set.seed(1)
 train &lt;- sample(1:nrow(paramsData), size = nrow(paramsData)*0.7)
 test &lt;- dplyr::setdiff(1:nrow(paramsData), train)
+
 train &lt;- paramsData[train, ]
 test &lt;- paramsData[test, ]
+
 train</code></pre>
 <pre><code>## # A tibble: 73 x 22
 ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit
@@ -301,8 +289,6 @@ train</code></pre>
 <h2>Summarizations</h2>
 <div id="summary-statistics" class="section level3">
 <h3>Summary Statistics</h3>
-<div id="five-numbers" class="section level4">
-<h4>Five Numbers</h4>
 <p>Summary statistics give us a quick look of our data. For our case, we can find out the average number of bike rentals per season.</p>
 <pre class="r"><code># Create a table of summary stats.
 seasonSummary &lt;- train %&gt;% 
@@ -319,6 +305,7 @@ seasonSummary &lt;- train %&gt;%
             &quot;Max&quot; = max(cnt),
             &quot;Std. Dev.&quot; = sd(cnt)
             )
+
 # Display a table of the summary stats.
 knitr::kable(seasonSummary, 
              caption=paste(&quot;Summary Statistics for total users&quot;,
@@ -381,7 +368,6 @@ knitr::kable(seasonSummary,
 </tr>
 </tbody>
 </table>
-</div>
 <div id="contingency-tables" class="section level4">
 <h4>Contingency Tables</h4>
 <p>A continuity table shows the relationship between two categorical variables. In our case, we can determine whether the season and weather are related, and whether the season and workday are related.</p>
@@ -633,9 +619,8 @@ plot33</code></pre>
 </div>
 <div id="modeling" class="section level2">
 <h2>Modeling</h2>
-<div id="modeling-of-the-first-group-member" class="section level3">
-<h3>Modeling of the first group member</h3>
-<pre class="r"><code>fit1 &lt;- lm(cnt ~ windspeed + hum + atemp + temp + weathersit + workingday + holiday + mnth + yr + season, data = train)
+<pre class="r"><code>### Modeling of the first group member
+fit1 &lt;- lm(cnt ~ windspeed + hum + atemp + temp + weathersit + workingday + holiday + mnth + yr + season, data = train)
 fit1</code></pre>
 <pre><code>## 
 ## Call:
@@ -816,7 +801,6 @@ MSEdf</code></pre>
 <pre class="r"><code># therefore, this is the chosen model glm4Fit
 #glm4Fit &lt;- lm(cnt ~ temp*yr*season, data = train)
 #might explore more on top 3 fits which are glm4Fit,glm1it,glm5Fit</code></pre>
-</div>
 <div id="modeling-of-the-second-group-member" class="section level3">
 <h3>Modeling of the second group member</h3>
 <pre class="r"><code>#fitting linear regression model
@@ -865,18 +849,16 @@ data.frame(t(fit1$results), t(fit2$results), t(fit3$results), t(fit4$results), t
 ## RMSESD     384.9418377 402.3791196 405.9663115 410.5735627 568.3788555
 ## RsquaredSD   0.2239649   0.2190495   0.2838686   0.2411007   0.3454801
 ## MAESD      192.0729857 208.7173196 235.7276173 196.8098968 360.4537892</code></pre>
-<pre class="r"><code>#final model: fit4: lm(cnt ~ season + I(yr)^2 + weathersit + temp + atemp, data = train)
+<pre class="r"><code>#final model: fit3: lm(cnt ~ season + yr + weathersit + temp + atemp, data = train)
 #check the fit
-lmPred &lt;- predict(fit4, newdata = test)
+lmPred &lt;- predict(fit3, newdata = test)
 lmfit &lt;- postResample(lmPred, obs = test$cnt)
 lmfit[1]</code></pre>
 <pre><code>##     RMSE 
 ## 749.5387</code></pre>
 <pre class="r"><code>#fitting boosted tree model for counts
 set.seed(1)
-train$yrsquare &lt;- (train$yr)^2
-test$yrsquare &lt;- (test$yr)^2
-boostFit &lt;- gbm(cnt ~ season + yrsquare + weathersit + atemp + temp, data = train, 
+boostFit &lt;- gbm(cnt ~ season + yr + weathersit + temp + atemp, data = train, 
                 distribution = &quot;poisson&quot;, n.trees = 10000, 
                 shrinkage = 0.01, interaction.depth = 4, cv.folds = 10)
 boostPred &lt;- predict(boostFit, newdata = dplyr::select(test, -cnt), n.trees = 10000)
@@ -884,7 +866,7 @@ boostPred &lt;- predict(boostFit, newdata = dplyr::select(test, -cnt), n.trees =
 #view Root MSE values
 boostRMSE &lt;- sqrt(mean((boostPred - test$cnt)^2))
 boostRMSE</code></pre>
-<pre><code>## [1] 4498.498</code></pre>
+<pre><code>## [1] 4498.513</code></pre>
 </div>
 </div>
 
