@@ -3,52 +3,403 @@ title: "ST558 Project 2"
 author: "Alex Selwaeh and Zichang Xiang"
 date: "7/1/2021"
 output: html_document
+params:
+      dow: "Monday"
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Introduction Section
+## Introduction Section
 The purpose of this project is to create predictive models and automate R Markdown reports. The data we will use is the number of Bike-sharing users aggregated on daily basis from the Capital Bikeshare system in 2011 and 2012. In this data set, there are 16 variables that are related to bike rental counts. The variables we will use include season, year (yr), month (mnth), hour (hr), holiday, weekday, workingday, weathersit, windspeed, casual, registered, and count (cnt). Since some of our predictors are categorical and our response is count, we will use the generalized linear model to predict the response.
 
-# Data
+## Data
 ```{r message=FALSE}
 #load packages
+library(corrplot)
+library(ggplot2)
+library(cowplot)
+library(modelr)
 library(readr)
 library(dplyr)
+library(knitr)
+library(caret)
+library(gbm)
+
 ```
 
 
 ```{r message=FALSE}
 #read in data
-day <- read_csv("day.csv")
-day
+dayData <- read_csv("day.csv")
+dayData
+
+#check for missing values
+anyNA(dayData)
+
+#create for loop to subset data for each weekday
+status<-vector()
+for (i in seq_len(nrow(dayData))){
+  if(dayData$weekday[i] == 1){
+    status[i] <- "Monday"
+  } else if (dayData$weekday[i] == 2){
+    status[i] <- "Tuesday"
+  } else if (dayData$weekday[i] == 3){
+    status[i] <- "Wednesday"
+  } else if (dayData$weekday[i] == 4){
+    status[i] <- "Thursday"
+  } else if (dayData$weekday[i] == 5){
+    status[i] <- "Friday"
+  } else if (dayData$weekday[i] == 6){
+    status[i] <- "Saturday"
+  } else {
+    status[i] <- "Sunday"
+  }
+}
+dayData$status <- status
 #data for Monday
-Mon <- day %>% filter(weekday == 1)
-Mon
+paramsData <- dayData %>% filter(status == params$dow)
+paramsData
+
+#Create columns to represent the categorical columns as mentioned in READ.ME
+paramsData <- paramsData %>%
+  # Add columns to represent the categorical columns as mentioned in READ.ME.
+  mutate(SeasonType = ifelse(season == 1, "spring", ifelse(season == 2, "summer", ifelse(season == 3, "fall", "winter"))), yearType= ifelse(yr == 0, "2011", "2012"), workingdayType= ifelse(workingday == 1, "Working Day", "Non WorkingDay"),weathersitType= ifelse(weathersit == 1, "Clear", ifelse(weathersit == 2, "Mist", ifelse(weathersit == 3, "Light Snow", "HeavyRain"))))
+
+#convert month from numerical to categorical charcter  
+paramsData$mnth1 <- as.character(paramsData$mnth)
+
 ```
 
 
 ```{r}
 #split data set into training and test sets
 set.seed(1)
-train <- sample(1:nrow(Mon), size = nrow(Mon)*0.7)
-test <- dplyr::setdiff(1:nrow(Mon), train)
-
-train <- Mon[train, ]
-test <- Mon[test, ]
+train <- sample(1:nrow(paramsData), size = nrow(paramsData)*0.7)
+test <- dplyr::setdiff(1:nrow(paramsData), train)
+train <- paramsData[train, ]
+test <- paramsData[test, ]
 train
 test
 ```
 
-# Summarizations
+## Summarizations
+
+### Summary Statistics
+
+#### Five Numbers
+Summary statistics give us a quick look of our data. For our case, we can find out the average number of bike rentals per season.
+
 ```{r}
+# Create a table of summary stats.
+seasonSummary <- train %>% 
+  # Select the seasone and cnt columns.
+  select(SeasonType, cnt) %>%
+  # Group by season
+  group_by(SeasonType) %>%
+  # Get summary statistics for total users by season.
+  summarize("Min." = min(cnt),
+            "1st Quartile" = quantile(cnt, 0.25),
+            "Median" = quantile(cnt, 0.5),
+            "Mean" = mean(cnt),
+            "3rd Quartile" = quantile(cnt, 0.75),
+            "Max" = max(cnt),
+            "Std. Dev." = sd(cnt)
+            )
+# Display a table of the summary stats.
+knitr::kable(seasonSummary, 
+             caption=paste("Summary Statistics for total users",
+                           "By Season"),
+             digits=2)
+```
+
+#### Contingency Tables
+
+A continuity table shows the relationship between two categorical variables. In our case, we can determine whether the season and weather are related, and whether the season and workday are related.
+
+```{r}
+#create contingency tables
+kable(table(train$SeasonType, train$weathersitType))
+kable(table(train$SeasonType, train$workingdayType))
+```
+
+### Plots
+#### Correlation Plots
+
+Correlation plots indicate the strength of a relationship between two variables. In our case, we can identify which variables are highly correlated with the number of bikes rented.
+
+```{r}
+#create correlation plot
+corr <- cor(train[, -c(1,2,7,17:22)])
+head(round(corr, 2))
+corrplot(corr, method = "circle")
+```
+
+
+#### Histograms
+
+Histograms are used to summarize distributions of variables. In our case, we are trying to find out whether the change in each variable has an impact on the number of bikes rented.
+
+```{r message=FALSE}
+#create boxplots for selected variables
+attach(train)
+par(mfrow = c(2,2))
+hist(season)
+hist(yr)
+hist(mnth)
+hist(holiday)
+hist(workingday)
+hist(weathersit)
+hist(temp)
+hist(atemp)
+hist(hum)
+hist(windspeed)
+hist(casual)
+hist(registered)
+hist(cnt)
+```
+
+
+#### Boxplots
+
+Boxplots show the shape of the distribution of each variable. By looking at the boxplots below, we can see how each variable affects the number of bikes rented. 
+
+
+```{r message=FALSE}
+#create boxplot for each variables
+attach(train)
+par(mfrow = c(1,4))
+boxplot(season, xlab = "season")
+boxplot(mnth, xlab =" mnth")
+boxplot(weathersit, xlab = "weathersit")
+boxplot(windspeed, xlab = " windspreed")
+boxplot(yr, xlab = "yr")
+boxplot(temp, xlab = "temp")
+boxplot(atemp, xlab = "atemp")
+
+#remove outliers
+train <- train[!abs(train$windspeed)>0.4, ]
+```
+
+
+Box plot with the number of users on the y-axis (wether casual,registered or total users) and the season on the x-axis - We can inspect the trend of users across seasons using these plots. Notice that the biggest contribution towards total number of users comes from the registered users which is expected. The most active seasons for that `r params$dow` is the fall season and the least active season is the spring.  
+
+
+```{r}
+#create boxplots
+plot11 <- ggplot(train, aes(SeasonType,
+                                   cnt,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Total Users") +
+  ggtitle("Total Users by Season") + theme(legend.position="none")
+plot11
+plot12 <- ggplot(train, aes(SeasonType,
+                                   casual,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Casual Users") +
+  ggtitle("Casual Users by Season") + theme(legend.position="none")
+plot12
+plot13 <- ggplot(train, aes(SeasonType,
+                                   registered,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Registered Users") +
+  ggtitle("Registered Users by Season") + theme(legend.position="none")
+plot13
+plot_grid(plot13, plot12,plot11, ncol=3)
 
 ```
 
-# Modeling
+
+#### Scatter plots
+
+Scatter plot with the total number of users on the y-axis and the (temperature, wind speed, humidity on the x-axis - We can inspect the trend of total users across these variables and notice that humidity almost has a negligible effect on total number of users. Also it's noticeable that the wind speed has a negative effect on the total number of users where as the wind speed increases, the number of users will decrease. 
+
+```{r}
+#create scatter plots
+plot21 <- ggplot(train, aes(temp,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Temprature") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Temprature. vs. Total Users")
+plot21
+
+plot22 <- ggplot(train, aes(windspeed,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Wind Speed") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Wind Speed vs. Total Users")
+plot22
+
+plot23 <- ggplot(train, aes(hum,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Humidity") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Humidity vs. Total Users")
+plot23
+
+plot_grid(plot21, plot22, plot23,ncol=3)
+```
+
+
+scatterplot with the number of users on the y-axis and the month on the x-axis, We
+can inspect the trend of users across months using this plot.
+
+```{r}
+plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot31
+plot32 <- ggplot(paramsData, aes(x = mnth, y = registered)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot32
+plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot33
+plot_grid(plot31, plot32, plot33,ncol=3)
+```
+
+
+## Modeling
+
+### Modeling of the first group member
 ```{r}
 
+fit1 <- lm(cnt ~ windspeed + hum + atemp + temp + weathersit + workingday + holiday + mnth + yr + season, data = train)
+fit1
+# use anova table to choose the significant variables and reduce the model selection
+anova(fit1)
+# anova reveals that season,yr,temp and atemp has a p-value of significance, therefore we will choose only these 4 variables in our analysis.
+summary(fit1)
+# start reducing fit1 by choosing the most significant variables based on p-value less than 10% considered highly significant
+fit2 <- lm(cnt ~ season+yr+temp+atemp+windspeed+mnth , data = train)
+fit2
+anova(fit2)
+summary(fit2)
+# Since in fit2 the anova revealed that atemp is not as highly significant as the rest of the variables in fit2, therefore reduce more
+#also note that temp and atemp are highly correlated predictors causing multicollinearity therefore it's safe to drop atemp
+fit3 <- lm(cnt ~ season+yr+temp+windspeed+mnth , data = train)
+fit3
+anova(fit3)
+# the data shows that we are interested in the following variables
+#temp,yr,season, windspeed,mnth and cnt as the response
+#Explore the full chosen data correlations
+corrData <- train %>% select(cnt,season,yr,temp,windspeed,mnth)
+GGally::ggpairs(corrData)
+#Correlation data table shows that wind speed and nth have the lowest correlation when compared with temperature, year and season. Therefore, we will reduce our variables to temp,yr,season.
+#Now start exploring among these 5 variables for the best fit model
+glm1Fit <- lm(cnt ~ season+yr+temp, data = train)
+glm2Fit <- lm(cnt ~ temp:yr, data = train)
+glm3Fit <- lm(cnt ~ temp:season, data = train)
+glm4Fit <- lm(cnt ~ temp*yr*season, data = train)
+glm5Fit <- lm(cnt ~ temp+yr+I(yr^2), data = train)
+
+model <- c(("glm1Fit"),("glm2Fit"),("glm3Fit"),("glm4Fit"),("glm5Fit"))
+  
+trainMSE <- c(rmse(glm1Fit, train),
+rmse(glm2Fit, train),
+rmse(glm3Fit, train),
+rmse(glm4Fit, train),
+rmse(glm4Fit, train)
+)
+testMSE <- c(rmse(glm1Fit, test),
+rmse(glm2Fit, test),
+rmse(glm3Fit, test),
+rmse(glm4Fit, test),
+rmse(glm5Fit, test)
+)
+MSEdf <- data.frame(model, trainMSE, testMSE)
+MSEdf <- MSEdf %>% arrange(testMSE)
+MSEdf
+
+# therefore, this is the chosen model glm4Fit
+#glm4Fit <- lm(cnt ~ temp*yr*season, data = train)
+#might explore more on top 3 fits which are glm4Fit,glm1it,glm5Fit
+```
+
+
+### Modeling of the second group member
+
+```{r}
+
+#fitting linear regression model
+fit1 <- train(cnt ~ season + yr + mnth  + weathersit + temp + atemp + windspeed, 
+              data = train,
+              method = "lm",
+              preProcess = c("center", "scale"),
+              trControl = trainControl(method = "cv", number = 10)
+              )
+
+fit2 <- train(cnt ~ season + yr + weathersit + temp + atemp + windspeed, 
+              data = train,
+              method = "lm",
+              preProcess = c("center", "scale"),
+              trControl = trainControl(method = "cv", number = 10)
+                )
+
+fit3 <- train(cnt ~ season + yr + weathersit + temp + atemp, 
+              data = train,
+              method = "lm",
+              preProcess = c("center", "scale"),
+              trControl = trainControl(method = "cv", number = 10)
+                )
+
+fit4 <- train(cnt ~ season + I(yr)^2 + weathersit + temp + atemp,
+              data = train,
+              method = "lm",
+              preProcess = c("center", "scale"),
+              trControl = trainControl(method = "cv", number = 10)
+              )
+
+fit5 <- train(cnt ~ season + I(yr)^2 + weathersit * atemp + temp,
+              data = train,
+              method = "lm",
+              preProcess = c("center", "scale"),
+              trControl = trainControl(method = "cv", number = 10)
+              )
+
+#compare each model
+data.frame(t(fit1$results), t(fit2$results), t(fit3$results), t(fit4$results), t(fit5$results))
+#final model: fit4: lm(cnt ~ season + I(yr)^2 + weathersit + temp + atemp, data = train)
+#check the fit
+lmPred <- predict(fit4, newdata = test)
+lmfit <- postResample(lmPred, obs = test$cnt)
+lmfit[1]
+
+#fitting boosted tree model for counts
+set.seed(1)
+train$yrsquare <- (train$yr)^2
+test$yrsquare <- (test$yr)^2
+boostFit <- gbm(cnt ~ season + yrsquare + weathersit + atemp + temp, data = train, 
+                distribution = "poisson", n.trees = 10000, 
+                shrinkage = 0.01, interaction.depth = 4, cv.folds = 10)
+boostPred <- predict(boostFit, newdata = dplyr::select(test, -cnt), n.trees = 10000)
+
+#view Root MSE values
+boostRMSE <- sqrt(mean((boostPred - test$cnt)^2))
+boostRMSE
 ```
 
