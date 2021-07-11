@@ -12,13 +12,13 @@ knitr::opts_chunk$set(echo = TRUE)
 Automation starts here / This is just a draft to finalize once project is finalized    
 ```{r}
 #get unique days / might need to convert dayIDs into literal days to match the output link
-dayIDs <- unique(dayData$weekday)
+dayIDs <- unique(dayData$status)
 
-#create filenames / This will be updated tio a link output on rmd once project is finalized and ready to automate  
-output_file <- paste0("The analysis for [",dayIDs," is available here](",dayIDs,"Analysis.html)")
+output_file <- paste0(dayIDs, ".html")
+
 
 #create a list for each team with just the day parameter
-params = lapply(dayIDs, FUN = function(x){list(dayofweek = x)})
+params = lapply(dayIDs, FUN = function(x){list(dow = x)})
 
 
 #put into a data frame 
