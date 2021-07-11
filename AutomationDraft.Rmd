@@ -9,13 +9,12 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Automation starts here / This is just a draft to finalize once project is finalized    
 ```{r}
 #get unique days / might need to convert dayIDs into literal days to match the output link
 dayIDs <- unique(dayData$status)
 
-output_file <- paste0(dayIDs, ".html")
-
+#output_file <- paste0(dayIDs, ".html")
+output_file <- paste0(dayIDs, ".md")
 
 #create a list for each team with just the day parameter
 params = lapply(dayIDs, FUN = function(x){list(dow = x)})
@@ -24,6 +23,7 @@ params = lapply(dayIDs, FUN = function(x){list(dow = x)})
 #put into a data frame 
 reports <- tibble(output_file, params)
 reports
+
 ```
 
 

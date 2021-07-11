@@ -66,6 +66,7 @@ for (i in seq_len(nrow(dayData))){
 
 dayData$status <- status
 #data for the day specified in params
+dayData1 <- dayData
 paramsData <- dayData %>% filter(status == params$dow)
 
 #Create columns to represent the categorical columns as mentioned in READ.ME
@@ -139,21 +140,14 @@ Correlation plot shows the strength of a relationship between two variables. In 
 
 ```{r}
 
-corr <- cor(train[, -c(1,2,7,17:22)])
-head(round(corr, 2))
-corrplot(corr, type = "upper", tl.pos = "lt")
-corrplot(corr, type = "lower", method = "number", add = TRUE, tl.pos = "n")
+#create correlation plot
+#corr <- cor(train[, -c(1,2,7,17:22)])
+#head(round(corr, 2))
+#corrplot(corr, type = "upper", method = "pie")
+
 ```
 
 Let's examine the correlations among the quantitative variables, create correlation plot excluding qualitative variables.
-
-```{r}
-corr1 <- cor(select(train,temp,atemp,hum,windspeed,casual,registered,cnt))
-head(round(corr1, 2))
-corrplot(corr1, type = "upper", tl.pos = "lt")
-corrplot(corr1, type = "lower", method = "number", add = TRUE, tl.pos = "n")
-```
-
 It's apparent how temp and atemp are strongly correlated and this will cause multicollineariy, therefore we can safely drop one of the two varaibles. Also, for same reasoning we will drop registered and casual since they are directly related to the contribution of cnt. The only quanitative variable to include in the linear regression analysis will be "atemp".
 
 #### Histograms
@@ -279,6 +273,7 @@ plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) + geom_point() +
     geom_smooth() +
     geom_smooth(method = lm, col = "Red")
 plot_grid(plot31, plot32, plot33,ncol=3)
+
 ```
 
 ## Modeling
@@ -448,11 +443,12 @@ mean((pls.pred -test$cnt)^2)
 MSE.val2 <- sqrt(mean((pls.pred -test$cnt)^2))
 MSE.val2
 ```
-We noticed that PLS resulted in a similar value to the previous methods and approaches used.
+We noticed that PLS resulted in a similar value to the previous methods and approaches used.  
 
 #### Random Forest  
 Random forest is a tree-based method for regression or classification which involves producing multiple trees known as decision trees to yield a single adequate prediction. ISLR book mentions about decision trees "When building these decision trees, each time a split in a tree is considered, a random sample of m predictors is chosen as split candidates from the full set of p predictors. The split is allowed to use only one of those m predictors. A fresh sample of
 m predictors is taken at each split."
+
 
 ```{r}
 rfTree <- train(cnt ~ atemp + yr + season +windspeed+weathersit+mnth, data = train, method = "rf",
