@@ -413,8 +413,8 @@ lmPred <- predict(fit, newdata = testNew)
 lmFit <- postResample(lmPred, obs = testNew$cnt)
 
 #calculate root MSE
-lmRMSE <- kable(lmFit[1])
-lmRMSE
+lmRMSE <- lmFit[1]
+kable(lmRMSE)
 ```
 
 We use the train() function to fit the boosted tree model in the same way we fit the linear regression model, except our method changes to "gbm". 
@@ -440,13 +440,13 @@ boostFit$bestTune
 boostPred <- predict(boostFit, newdata = testNew)
 result <- postResample(boostPred, testNew$cnt)
 boostRMSE <- result[1]
-boostRMSE
+kable(boostRMSE)
 ```
 
 ### Comparison of all four models
 ```{r}
 #combine RMSE from four models
-results <- data.frame(MSEdf[1,3], lmFit[1], boostRMSE)
+results <- data.frame(MSEdf[1,3], lmRMSE, boostRMSE)
 #create colnames for each models
 colnames(results) <- c("lmFit_1stMember", "lmFit_2ndMember", "Boost Tree")
 #view the results

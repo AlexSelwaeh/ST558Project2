@@ -25,7 +25,7 @@ body {
 
 <body>
 
-<h1 id="st558-project-2">ST558 Project 2</h1>
+<h1 id="st558project2">ST558Project2</h1>
 <p>Alex Selwaeh and Zichang Xiang 7/1/2021</p>
 <h2 id="introduction-section">Introduction Section</h2>
 <p>The purpose of this project is to create predictive models and automate R Markdown reports. The data we will use is the number of Bike-sharing users aggregated on daily basis from the Capital Bikeshare system in 2011 and 2012. In this data set, there are 16 variables that are related to bike rental counts. The variables we will use include season, year (yr), mnth, holiday, weekday, workingday, weathersit, hum, atemp, temp, casual, registered, and count (cnt). To model response counts (cnt), we will use linear regression models and ensemble tree methods (random forest method and boosted tree method).</p>
@@ -1054,8 +1054,8 @@ body {
 <span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>lmFit <span class="ot">&lt;-</span> <span class="fu">postResample</span>(lmPred, <span class="at">obs =</span> testNew<span class="sc">$</span>cnt)</span>
 <span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a><span class="co">#calculate root MSE</span></span>
-<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>lmRMSE <span class="ot">&lt;-</span> <span class="fu">kable</span>(lmFit[<span class="dv">1</span>])</span>
-<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>lmRMSE</span></code></pre></div>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>lmRMSE <span class="ot">&lt;-</span> lmFit[<span class="dv">1</span>]</span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(lmRMSE)</span></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -1098,16 +1098,28 @@ body {
 <span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a>boostPred <span class="ot">&lt;-</span> <span class="fu">predict</span>(boostFit, <span class="at">newdata =</span> testNew)</span>
 <span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">postResample</span>(boostPred, testNew<span class="sc">$</span>cnt)</span>
 <span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>boostRMSE <span class="ot">&lt;-</span> result[<span class="dv">1</span>]</span>
-<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a>boostRMSE</span></code></pre></div>
-<pre><code>##     RMSE 
-## 668.0509</code></pre>
+<span id="cb69-5"><a href="#cb69-5" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(boostRMSE)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">RMSE</td>
+<td align="right">668.0509</td>
+</tr>
+</tbody>
+</table>
 <h3 id="comparison-of-all-four-models">Comparison of all four models</h3>
-<div class="sourceCode" id="cb71"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="co">#combine RMSE from four models</span></span>
-<span id="cb71-2"><a href="#cb71-2" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(MSEdf[<span class="dv">1</span>,<span class="dv">3</span>], lmFit[<span class="dv">1</span>], boostRMSE)</span>
-<span id="cb71-3"><a href="#cb71-3" aria-hidden="true" tabindex="-1"></a><span class="co">#create colnames for each models</span></span>
-<span id="cb71-4"><a href="#cb71-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(results) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;lmFit_1stMember&quot;</span>, <span class="st">&quot;lmFit_2ndMember&quot;</span>, <span class="st">&quot;Boost Tree&quot;</span>)</span>
-<span id="cb71-5"><a href="#cb71-5" aria-hidden="true" tabindex="-1"></a><span class="co">#view the results</span></span>
-<span id="cb71-6"><a href="#cb71-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(results)</span></code></pre></div>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="co">#combine RMSE from four models</span></span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(MSEdf[<span class="dv">1</span>,<span class="dv">3</span>], lmRMSE, boostRMSE)</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a><span class="co">#create colnames for each models</span></span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(results) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;lmFit_1stMember&quot;</span>, <span class="st">&quot;lmFit_2ndMember&quot;</span>, <span class="st">&quot;Boost Tree&quot;</span>)</span>
+<span id="cb70-5"><a href="#cb70-5" aria-hidden="true" tabindex="-1"></a><span class="co">#view the results</span></span>
+<span id="cb70-6"><a href="#cb70-6" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(results)</span></code></pre></div>
 <table>
 <thead>
 <tr class="header">

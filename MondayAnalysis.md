@@ -1,4 +1,4 @@
-ST558 Project 2
+ST558Project2
 ================
 Alex Selwaeh and Zichang Xiang
 7/1/2021
@@ -248,7 +248,7 @@ head(round(corr, 2))
 corrplot(corr, type = "upper", method = "pie")
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-98-1.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 #### Histograms
 
@@ -267,7 +267,7 @@ g + facet_wrap(~ key, scales = "free") +
     geom_density()
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-99-1.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 #### Boxplots
 
@@ -286,7 +286,7 @@ g + facet_wrap(~ key, scales = "free") +
     geom_boxplot(aes(x = value))
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-100-1.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->
 
 Boxplot with the number of users on the y-axis (wether casual,registered
 or total users) and the season on the x-axis - We can inspect the trend
@@ -309,7 +309,7 @@ plot11 <- ggplot(train, aes(SeasonType, cnt, color = cnt)) +
 plot11
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-101-1.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 ``` r
 #create boxplot plot12
@@ -325,7 +325,7 @@ plot12 <- ggplot(train, aes(SeasonType, casual, color = cnt)) +
 plot12
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-101-2.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-9-2.png)<!-- -->
 
 ``` r
 #create boxplot plot13
@@ -341,14 +341,14 @@ plot13 <- ggplot(train, aes(SeasonType, registered, color = cnt)) +
 plot13
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-101-3.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-9-3.png)<!-- -->
 
 ``` r
 #combine all three boxplots together
 plot_grid(plot13, plot12, plot11, ncol = 3)
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-101-4.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-9-4.png)<!-- -->
 
 #### Scatter plots
 
@@ -373,7 +373,7 @@ plot21 <- ggplot(train, aes(temp, cnt, color = cnt)) +
 plot21
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-102-1.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 ``` r
 #create scatterplot plot22
@@ -388,7 +388,7 @@ plot22 <- ggplot(train, aes(windspeed, cnt, color = cnt)) +
 plot22
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-102-2.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-10-2.png)<!-- -->
 
 ``` r
 #create scatterplot plot23
@@ -403,14 +403,14 @@ plot23 <- ggplot(train, aes(hum, cnt, color = cnt)) +
 plot23
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-102-3.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-10-3.png)<!-- -->
 
 ``` r
 #combine all three scatterplot together
 plot_grid(plot21, plot22, plot23, ncol = 3)
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-102-4.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-10-4.png)<!-- -->
 
 scatterplot with the number of users on the y-axis and the month on the
 x-axis, We can inspect the trend of users across months using this plot.
@@ -424,7 +424,7 @@ plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) +
 plot31
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-103-1.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 ``` r
 #create scatterplot plot32
@@ -435,7 +435,7 @@ plot32 <- ggplot(paramsData, aes(x = mnth, y = registered)) +
 plot32
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-103-2.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-11-2.png)<!-- -->
 
 ``` r
 #create scatterplot plot33
@@ -446,14 +446,14 @@ plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) +
 plot33
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-103-3.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-11-3.png)<!-- -->
 
 ``` r
 #combine three scatterplots together
 plot_grid(plot31, plot32, plot33, ncol = 3)
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-103-4.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-11-4.png)<!-- -->
 
 ## Modeling
 
@@ -637,7 +637,7 @@ corrData <- train %>% dplyr::select(cnt,season,yr,temp,windspeed,mnth)
 GGally::ggpairs(corrData)
 ```
 
-![](MondayAnalysis_files/figure-gfm/unnamed-chunk-105-1.png)<!-- -->
+![](MondayAnalysis_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 ``` r
 #Correlation data table shows that wind speed and nth have the lowest correlation when compared with temperature, year and season. Therefore, we will reduce our variables to temp,yr,season.
@@ -1137,8 +1137,8 @@ lmPred <- predict(fit, newdata = testNew)
 lmFit <- postResample(lmPred, obs = testNew$cnt)
 
 #calculate root MSE
-lmRMSE <- kable(lmFit[1])
-lmRMSE
+lmRMSE <- lmFit[1]
+kable(lmRMSE)
 ```
 
 |      |       x |
@@ -1188,17 +1188,18 @@ boostFit$bestTune
 boostPred <- predict(boostFit, newdata = testNew)
 result <- postResample(boostPred, testNew$cnt)
 boostRMSE <- result[1]
-boostRMSE
+kable(boostRMSE)
 ```
 
-    ##     RMSE 
-    ## 668.0509
+|      |        x |
+|:-----|---------:|
+| RMSE | 668.0509 |
 
 ### Comparison of all four models
 
 ``` r
 #combine RMSE from four models
-results <- data.frame(MSEdf[1,3], lmFit[1], boostRMSE)
+results <- data.frame(MSEdf[1,3], lmRMSE, boostRMSE)
 #create colnames for each models
 colnames(results) <- c("lmFit_1stMember", "lmFit_2ndMember", "Boost Tree")
 #view the results

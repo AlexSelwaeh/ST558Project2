@@ -1250,8 +1250,8 @@ lmPred &lt;- predict(fit, newdata = testNew)
 lmFit &lt;- postResample(lmPred, obs = testNew$cnt)
 
 #calculate root MSE
-lmRMSE &lt;- kable(lmFit[1])
-lmRMSE</code></pre>
+lmRMSE &lt;- lmFit[1]
+kable(lmRMSE)</code></pre>
 <table>
 <thead>
 <tr class="header">
@@ -1304,14 +1304,26 @@ boostFit$bestTune</code></pre>
 boostPred &lt;- predict(boostFit, newdata = testNew)
 result &lt;- postResample(boostPred, testNew$cnt)
 boostRMSE &lt;- result[1]
-boostRMSE</code></pre>
-<pre><code>##     RMSE 
-## 668.0509</code></pre>
+kable(boostRMSE)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">x</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">RMSE</td>
+<td align="right">668.0509</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div id="comparison-of-all-four-models" class="section level3">
 <h3>Comparison of all four models</h3>
 <pre class="r"><code>#combine RMSE from four models
-results &lt;- data.frame(MSEdf[1,3], lmFit[1], boostRMSE)
+results &lt;- data.frame(MSEdf[1,3], lmRMSE, boostRMSE)
 #create colnames for each models
 colnames(results) &lt;- c(&quot;lmFit_1stMember&quot;, &quot;lmFit_2ndMember&quot;, &quot;Boost Tree&quot;)
 #view the results
