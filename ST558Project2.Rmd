@@ -146,30 +146,11 @@ kable(table(train$SeasonType, train$workingdayType))
 
 Correlation plot shows the strength of a relationship between two variables. In our case, we can identify which variables are highly correlated with one another, especially with the response, the number of bikes rented.
 
-<<<<<<< HEAD
-```{r corrplot}
-=======
 ```{r}
 #create correlation plot
 corr <- cor(train[, -c(1,2,7,17:22)])
 head(round(corr, 2))
 corrplot(corr, type = "upper", method = "pie")
-```
->>>>>>> b394c8f682fb2a68d16f2bfad0f855c25b4bcc71
-
-#create correlation plot
-#corr <- cor(train[, -c(1,2,7,17:22)])
-#head(round(corr, 2))
-#corrplot(corr, type = "upper", method = "pie")
-
-<<<<<<< HEAD
-=======
-```{r}
-#corr1 <- cor(select(train,temp,atemp,hum,windspeed,casual,registered,cnt))
-#head(round(corr1, 2))
-#corrplot(corr1, type = "upper", tl.pos = "lt")
-#corrplot(corr1, type = "lower", method = "number", add = TRUE, tl.pos = "n")
->>>>>>> b394c8f682fb2a68d16f2bfad0f855c25b4bcc71
 ```
 
 Let's examine the correlations among the quantitative variables, create correlation plot excluding qualitative variables.
@@ -179,13 +160,9 @@ It's apparent how temp and atemp are strongly correlated and this will cause mul
 
 Histograms are used to summarize distributions of variables. In our case, we are trying to find out whether the change in each variable has an impact on the number of bikes rented.
 
-<<<<<<< HEAD
-```{r histo, message=FALSE}
-#create boxplots for selected variables (referenced from https://drsimonj.svbtle.com/quick-plot-of-all-variables)
-=======
+
 ```{r message=FALSE}
 #referenced from https://drsimonj.svbtle.com/quick-plot-of-all-variables
->>>>>>> b394c8f682fb2a68d16f2bfad0f855c25b4bcc71
 #reshape the data set
 reshape <- train %>% keep(is.numeric) %>% gather()
 
@@ -199,23 +176,6 @@ g + facet_wrap(~ key, scales = "free") +
 
 Boxplots show the shape of the distribution of each variable. By looking at the boxplots below, we can see how each variable affects the number of bikes rented.
 
-<<<<<<< HEAD
-```{r boxplots, message=FALSE}
-#create boxplot for each variables
-attach(train)
-par(mfrow = c(1,4))
-boxplot(season, xlab = "season")
-boxplot(mnth, xlab =" mnth")
-boxplot(weathersit, xlab = "weathersit")
-boxplot(windspeed, xlab = " windspreed")
-boxplot(yr, xlab = "yr")
-boxplot(temp, xlab = "temp")
-boxplot(atemp, xlab = "atemp")
-
-#remove outliers
-train <- train[!abs(train$windspeed)>0.4, ]
-=======
-
 ```{r message=FALSE}
 #referenced from https://drsimonj.svbtle.com/quick-plot-of-all-variables
 #reshape the data set
@@ -225,24 +185,10 @@ reshape <- train %>% keep(is.numeric) %>% gather()
 g <- ggplot(reshape, aes(x = value))
 g + facet_wrap(~ key, scales = "free") + 
     geom_boxplot(aes(x = value))
->>>>>>> b394c8f682fb2a68d16f2bfad0f855c25b4bcc71
 ```
 
 Boxplot with the number of users on the y-axis (wether casual,registered or total users) and the season on the x-axis - We can inspect the trend of users across seasons using these plots. Notice that the biggest contribution towards total number of users comes from the registered users which is expected. The most active seasons for that `r params$dow` is the fall season and the least active season is the spring.
 
-<<<<<<< HEAD
-```{r multiboxplots}
-#create boxplots
-plot11 <- ggplot(train, aes(SeasonType,
-                                   cnt,
-                                   color=cnt)) +
-  geom_boxplot() + 
-  # Jitter the points to add a little more info to the boxplot.
-  geom_jitter() + 
-  # Add labels to the axes.
-  scale_x_discrete("Season") + scale_y_continuous("Total Users") +
-  ggtitle("Total Users by Season") + theme(legend.position="none")
-=======
 ```{r}
 #create boxplot plot11
 plot11 <- ggplot(train, aes(SeasonType, cnt, color = cnt)) +
@@ -254,7 +200,6 @@ plot11 <- ggplot(train, aes(SeasonType, cnt, color = cnt)) +
           scale_y_continuous("Total Users") +
           ggtitle("Total Users by Season") + 
           theme(legend.position = "none")
->>>>>>> b394c8f682fb2a68d16f2bfad0f855c25b4bcc71
 plot11
 
 #create boxplot plot12
@@ -289,18 +234,7 @@ plot_grid(plot13, plot12, plot11, ncol = 3)
 #### Scatter plots  
 
 Scatter plot with the total number of users on the y-axis and the temperature, wind speed, humidity on the x-axis - We can inspect the trend of total users across these variables and notice that humidity almost has a slight negative effect on the total number of users. Also it's noticeable that the wind speed has a slight negative effect on the total number of users .  
-<<<<<<< HEAD
-```{r scatterplots}
-#create scatter plots
-plot21 <- ggplot(train, aes(temp,
-                                   cnt,
-                                   color=cnt)) + 
-  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
-  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
-  scale_x_continuous("Temprature") + 
-  scale_y_continuous("Total Users") + 
-  ggtitle("Temprature. vs. Total Users")
-=======
+
 ```{r}
 #create scatter plot plot21
 plot21 <- ggplot(train, aes(temp, cnt, color = cnt)) + 
@@ -311,7 +245,6 @@ plot21 <- ggplot(train, aes(temp, cnt, color = cnt)) +
           scale_x_continuous("Temprature") + 
           scale_y_continuous("Total Users") + 
           ggtitle("Temprature. vs. Total Users")
->>>>>>> b394c8f682fb2a68d16f2bfad0f855c25b4bcc71
 plot21
 
 #create scatterplot plot22
@@ -342,20 +275,6 @@ plot_grid(plot21, plot22, plot23, ncol = 3)
 
 scatterplot with the number of users on the y-axis and the month on the x-axis, We can inspect the trend of users across months using this plot.
 
-<<<<<<< HEAD
-```{r scat}
-plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + geom_point() +
-    geom_smooth() +
-    geom_smooth(method = lm, col = "Red")
-plot32 <- ggplot(paramsData, aes(x = mnth, y = registered)) + geom_point() +
-    geom_smooth() +
-    geom_smooth(method = lm, col = "Red")
-plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) + geom_point() +
-    geom_smooth() +
-    geom_smooth(method = lm, col = "Red")
-plot_grid(plot31, plot32, plot33,ncol=3)
-
-=======
 ```{r}
 #create scatterplot plot31
 plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + 
@@ -380,7 +299,6 @@ plot33
 
 #combine three scatterplots together
 plot_grid(plot31, plot32, plot33, ncol = 3)
->>>>>>> b394c8f682fb2a68d16f2bfad0f855c25b4bcc71
 ```
 
 ## Modeling
@@ -413,7 +331,6 @@ fitlm4 <- train(cnt ~ atemp + yr + I(yr^2), data = train,
                 preProcess = c("center", "scale"),
                 trControl = trainControl(method = "cv", number = 10))
 fitlm4
-
 ```
 
 ```{r partner12}
