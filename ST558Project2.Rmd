@@ -17,7 +17,7 @@ The purpose of this project is to create predictive models and automate R Markdo
 
 ## Data
 
-```{r message=FALSE}
+```{r librarydefs, message=FALSE}
 #load packages
 library(corrplot)
 library(ggplot2)
@@ -35,7 +35,7 @@ library(leaps)
 
 ```
 
-```{r message=FALSE}
+```{r readin, message=FALSE}
 #read in data
 dayData <- read_csv("day.csv")
 dayData
@@ -79,7 +79,7 @@ paramsData$mnth1 <- as.character(paramsData$mnth)
 
 ```
 
-```{r}
+```{r setseeds}
 #split data set into training and test sets
 set.seed(1)
 train <- sample(1:nrow(paramsData), size = nrow(paramsData)*0.7)
@@ -98,7 +98,7 @@ test
 
 Summary statistics give us a quick look of our data. For our case, we can find out the average number of bike rentals per season.
 
-```{r}
+```{r summarytable}
 # Create a table of summary stats.
 seasonSummary <- train %>% 
   # Select the seasone and cnt columns.
@@ -126,7 +126,7 @@ knitr::kable(seasonSummary,
 
 A continuity table shows the relationship between two categorical variables. In our case, we can determine whether the season and weather are related, and whether the season and workday are related.
 
-```{r}
+```{r contingencytables}
 #create contingency tables
 kable(table(train$SeasonType, train$weathersitType))
 kable(table(train$SeasonType, train$workingdayType))
@@ -138,7 +138,7 @@ kable(table(train$SeasonType, train$workingdayType))
 
 Correlation plot shows the strength of a relationship between two variables. In our case, we can identify which variables are highly correlated with one another, especially with the response, the number of bikes rented.
 
-```{r}
+```{r corrplot}
 
 #create correlation plot
 #corr <- cor(train[, -c(1,2,7,17:22)])
@@ -154,7 +154,7 @@ It's apparent how temp and atemp are strongly correlated and this will cause mul
 
 Histograms are used to summarize distributions of variables. In our case, we are trying to find out whether the change in each variable has an impact on the number of bikes rented.
 
-```{r message=FALSE}
+```{r histo, message=FALSE}
 #create boxplots for selected variables (referenced from https://drsimonj.svbtle.com/quick-plot-of-all-variables)
 #reshape the data set
 reshape <- train %>% keep(is.numeric) %>% gather() 
@@ -168,7 +168,7 @@ g + facet_wrap(~ key, scales = "free") + geom_density()
 
 Boxplots show the shape of the distribution of each variable. By looking at the boxplots below, we can see how each variable affects the number of bikes rented.
 
-```{r message=FALSE}
+```{r boxplots, message=FALSE}
 #create boxplot for each variables
 attach(train)
 par(mfrow = c(1,4))
@@ -186,7 +186,7 @@ train <- train[!abs(train$windspeed)>0.4, ]
 
 Boxplot with the number of users on the y-axis (wether casual,registered or total users) and the season on the x-axis - We can inspect the trend of users across seasons using these plots. Notice that the biggest contribution towards total number of users comes from the registered users which is expected. The most active seasons for that `r params$dow` is the fall season and the least active season is the spring.
 
-```{r}
+```{r multiboxplots}
 #create boxplots
 plot11 <- ggplot(train, aes(SeasonType,
                                    cnt,
@@ -222,10 +222,10 @@ plot_grid(plot13, plot12,plot11, ncol=3)
 
 ```
 
-#### Scatter plots
+#### Scatter plots  
 
 Scatter plot with the total number of users on the y-axis and the temperature, wind speed, humidity on the x-axis - We can inspect the trend of total users across these variables and notice that humidity almost has a slight negative effect on the total number of users. Also it's noticeable that the wind speed has a slight negative effect on the total number of users .  
-```{r}
+```{r scatterplots}
 #create scatter plots
 plot21 <- ggplot(train, aes(temp,
                                    cnt,
@@ -262,7 +262,7 @@ plot_grid(plot21, plot22, plot23,ncol=3)
 
 scatterplot with the number of users on the y-axis and the month on the x-axis, We can inspect the trend of users across months using this plot.
 
-```{r}
+```{r scat}
 plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + geom_point() +
     geom_smooth() +
     geom_smooth(method = lm, col = "Red")
@@ -282,7 +282,7 @@ Linear Regression analyzes the relationship(s) between a response variable and o
 
 ### Modeling of the first group member
 
-```{r}
+```{r partner11}
 fitlm1 <- train(cnt ~ atemp*season*yr, data = train, 
                 method = "lm", 
                 preProcess = c("center", "scale"),
@@ -309,7 +309,7 @@ fitlm4
 
 ```
 
-```{r}
+```{r partner12}
 pred.fitlm1 <- predict(fitlm1, newdata = test)
 rmse1<-postResample(pred.fitlm1, obs = test$cnt)
 
@@ -328,7 +328,7 @@ kable(data.frame(rmse1[1], rmse2[1], rmse3[1],rmse4[1]))
 ```
 
 Summary for the model fit with the lowest cross validation test error(RMSE) : fitlm3
-```{r}
+```{r partner13}
 
 summary(fitlm3)
 
@@ -336,7 +336,7 @@ summary(fitlm3)
 
 A different approach for selecting the best model for prediction purposes is minimizing test MSE.    
 
-```{r}
+```{r partner14}
 # select multiple random models in addition to the one we picked from the previous study being the first fit(glm1Fit)
 glm1Fit <- lm(cnt ~ atemp + yr + season +windspeed+weathersit+mnth, data = train)
 glm2Fit <- lm(cnt ~ atemp:yr, data = train)
@@ -366,7 +366,7 @@ kable(data.frame(MSEdf),caption = "Table showing glm1Fit is the best fit")
 
 Knowing that we can't fully trust test MSE values in order to decide on a model, we will go a step further in developing AIC,BIC and Rsquare Criterias. Using the function from module 9  
 
-```{r}
+```{r partner15}
 compareFitStats <- function(newfit1, newfit2,newfit3,newfit4,newfit5){
     require(MuMIn)
     fitStats <- data.frame(fitStat = c("Adj R Square", "AIC", "AICc", "BIC"),
@@ -394,7 +394,7 @@ Again, the calculated criterias shows that glm1Fit (which is the same as fitlm3 
 
 An extra step to prove that our choice of glm1Fit as the best fit, here I decided to use the method explained in section 6.5.3 of the book: Choosing Among Models Using the Validation Set Approach (test Dataset) and Cross-Validation.
 
-```{r}
+```{r partner16}
 # we apply regsubsets() to the training set in order to perform best subset selection.
 library(leaps)
 regfit.best=regsubsets (cnt ~ temp + yr + season +windspeed+mnth+holiday+weathersit+atemp,data=train)
@@ -412,13 +412,11 @@ for(i in 1:8)
 
 val.errors
 
-which.min(val.errors)
-
 ```
 Displaying the Selected model with the calculted regression coefficients.  
 
 ```{r}
-coef(regfit.best ,6)
+#coef(regfit.best ,which.min(val.errors))
 ```
 Also another extra verification step by doing the Partial least squares method.  
 
@@ -450,7 +448,7 @@ Random forest is a tree-based method for regression or classification which invo
 m predictors is taken at each split."
 
 
-```{r}
+```{r rforest}
 rfTree <- train(cnt ~ atemp + yr + season +windspeed+weathersit+mnth, data = train, method = "rf",
                 trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5),
                 preProcess = c("center", "scale"))
@@ -552,7 +550,7 @@ boostFit <- train(cnt ~ I(yr)^2 + season *atemp,
                   trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5))
 ```
 
-```{r}
+```{r boostresults}
 #view the results
 boostFit$results
 #view the best model

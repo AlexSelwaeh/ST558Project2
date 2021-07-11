@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-#get unique days / might need to convert dayIDs into literal days to match the output link
+#get unique days
 dayIDs <- unique(dayData$status)
 
 #output_file <- paste0(dayIDs, ".html")
@@ -32,6 +32,7 @@ library(rmarkdown)
 #need to use x[[1]] to get at elements since tibble doesn't simplify
 apply(reports, MARGIN = 1, 
             FUN = function(x){
-                render(input = "ST558Project2.Rmd", output_file = x[[1]], params = x[[2]])
+                render(input = "ST558Project2.Rmd", output_file=x[[1]] , params = x[[2]])
                 })
+
 ```
