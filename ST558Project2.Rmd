@@ -11,12 +11,12 @@ params:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
 ## Introduction Section
 
 The purpose of this project is to create predictive models and automate R Markdown reports. The data we will use is the number of Bike-sharing users aggregated on daily basis from the Capital Bikeshare system in 2011 and 2012. In this data set, there are 16 variables that are related to bike rental counts. The variables we will use include season, year (yr), mnth, holiday, weekday, workingday, weathersit, hum, atemp, temp, casual, registered, and count (cnt). To model response counts (cnt), we will use linear regression models and ensemble tree methods (random forest method and boosted tree method).
 
 ## Data
+
 ```{r message=FALSE}
 #load packages
 library(corrplot)
@@ -30,9 +30,10 @@ library(caret)
 library(tidyr)
 library(purrr)
 library(gbm)
+library(randomForest)
+library(leaps)
 
 ```
-
 
 ```{r message=FALSE}
 #read in data
@@ -64,7 +65,7 @@ for (i in seq_len(nrow(dayData))){
 }
 
 dayData$status <- status
-#data for Monday
+#data for the day specified in params
 paramsData <- dayData %>% filter(status == params$dow)
 
 #Create columns to represent the categorical columns as mentioned in READ.ME
@@ -76,7 +77,6 @@ paramsData <- paramsData %>%
 paramsData$mnth1 <- as.character(paramsData$mnth)
 
 ```
-
 
 ```{r}
 #split data set into training and test sets
@@ -90,7 +90,6 @@ test <- paramsData[test, ]
 train
 test
 ```
-
 
 ## Summarizations
 
@@ -133,18 +132,29 @@ kable(table(train$SeasonType, train$workingdayType))
 ```
 
 ### Plots
+
 #### Correlation Plot
 
-Correlation plot shows the strength of a relationship between two variables. In our case, we can identify which variables are highly correlated with one another, especially with the response, the number of bikes rented. 
+Correlation plot shows the strength of a relationship between two variables. In our case, we can identify which variables are highly correlated with one another, especially with the response, the number of bikes rented.
 
 ```{r}
-#create correlation plot
+
 corr <- cor(train[, -c(1,2,7,17:22)])
 head(round(corr, 2))
-corrplot(corr, type = "upper", method = "pie")
-
+corrplot(corr, type = "upper", tl.pos = "lt")
+corrplot(corr, type = "lower", method = "number", add = TRUE, tl.pos = "n")
 ```
 
+Let's examine the correlations among the quantitative variables, create correlation plot excluding qualitative variables.
+
+```{r}
+corr1 <- cor(select(train,temp,atemp,hum,windspeed,casual,registered,cnt))
+head(round(corr1, 2))
+corrplot(corr1, type = "upper", tl.pos = "lt")
+corrplot(corr1, type = "lower", method = "number", add = TRUE, tl.pos = "n")
+```
+
+It's apparent how temp and atemp are strongly correlated and this will cause multicollineariy, therefore we can safely drop one of the two varaibles. Also, for same reasoning we will drop registered and casual since they are directly related to the contribution of cnt. The only quanitative variable to include in the linear regression analysis will be "atemp".
 
 #### Histograms
 
@@ -160,11 +170,9 @@ g + facet_wrap(~ key, scales = "free") + geom_density()
 
 ```
 
-
 #### Boxplots
 
-Boxplots show the shape of the distribution of each variable. By looking at the boxplots below, we can see how each variable affects the number of bikes rented. 
-
+Boxplots show the shape of the distribution of each variable. By looking at the boxplots below, we can see how each variable affects the number of bikes rented.
 
 ```{r message=FALSE}
 #create boxplot for each variables
@@ -182,9 +190,7 @@ boxplot(atemp, xlab = "atemp")
 train <- train[!abs(train$windspeed)>0.4, ]
 ```
 
-
-Boxplot with the number of users on the y-axis (wether casual,registered or total users) and the season on the x-axis - We can inspect the trend of users across seasons using these plots. Notice that the biggest contribution towards total number of users comes from the registered users which is expected. The most active seasons for that `r params$dow` is the fall season and the least active season is the spring.  
-
+Boxplot with the number of users on the y-axis (wether casual,registered or total users) and the season on the x-axis - We can inspect the trend of users across seasons using these plots. Notice that the biggest contribution towards total number of users comes from the registered users which is expected. The most active seasons for that `r params$dow` is the fall season and the least active season is the spring.
 
 ```{r}
 #create boxplots
@@ -222,11 +228,9 @@ plot_grid(plot13, plot12,plot11, ncol=3)
 
 ```
 
-
 #### Scatter plots
 
-Scatter plot with the total number of users on the y-axis and the temperature, wind speed, humidity on the x-axis - We can inspect the trend of total users across these variables and notice that humidity almost has a negligible effect on total number of users. Also it's noticeable that the wind speed has a negative effect on the total number of users where as the wind speed increases, the number of users will decrease. 
-
+Scatter plot with the total number of users on the y-axis and the temperature, wind speed, humidity on the x-axis - We can inspect the trend of total users across these variables and notice that humidity almost has a slight negative effect on the total number of users. Also it's noticeable that the wind speed has a slight negative effect on the total number of users .  
 ```{r}
 #create scatter plots
 plot21 <- ggplot(train, aes(temp,
@@ -262,59 +266,88 @@ plot23
 plot_grid(plot21, plot22, plot23,ncol=3)
 ```
 
-
-scatterplot with the number of users on the y-axis and the month on the x-axis, We
-can inspect the trend of users across months using this plot.
+scatterplot with the number of users on the y-axis and the month on the x-axis, We can inspect the trend of users across months using this plot.
 
 ```{r}
 plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + geom_point() +
     geom_smooth() +
     geom_smooth(method = lm, col = "Red")
-plot31
 plot32 <- ggplot(paramsData, aes(x = mnth, y = registered)) + geom_point() +
     geom_smooth() +
     geom_smooth(method = lm, col = "Red")
-plot32
 plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) + geom_point() +
     geom_smooth() +
     geom_smooth(method = lm, col = "Red")
-plot33
 plot_grid(plot31, plot32, plot33,ncol=3)
 ```
 
-
 ## Modeling
+
+Linear Regression analyzes the relationship(s) between a response variable and one or more of the predictor variables and their interactions. It can determine how strong or weak is the relationship between these variables, it can identify which of the predictor variables contribute the most to the response and it can help in predicting future responses. Linear regression could be simple which includes only one predictor variable in the fitted model, could be multiple linear regression involving more than one predictor and there is general linear models where the reponse and predictors could be qualitative and not only quantitative. Linear regression model fits are done with lm() function in R, lm() is a linear regression model that uses a straight line to describe the relationship between variables. It finds the line of best fit through the given data by searching for the value of the coefficients which represent the linear regression model and knows as beta_0, beta_1, beta_2 and responsible for minimizing the total error of the model (MSE for quantitative response analysis).
+
 ### Modeling of the first group member
+
 ```{r}
-# select models
-fit1 <- lm(cnt ~ windspeed + hum + atemp + temp + weathersit + workingday + holiday + mnth + yr + season, data = train)
-fit1
-# use anova table to choose the significant variables and reduce the model selection
-anova(fit1)
-# anova reveals that season,yr,temp and atemp has a p-value of significance, therefore we will choose only these 4 variables in our analysis.
-summary(fit1)
-# start reducing fit1 by choosing the most significant variables based on p-value less than 10% considered highly significant
-fit2 <- lm(cnt ~ season+yr+temp+atemp+windspeed+mnth , data = train)
-fit2
-anova(fit2)
-summary(fit2)
-# Since in fit2 the anova revealed that atemp is not as highly significant as the rest of the variables in fit2, therefore reduce more
-#also note that temp and atemp are highly correlated predictors causing multicollinearity therefore it's safe to drop atemp
-fit3 <- lm(cnt ~ season+yr+temp+windspeed+mnth , data = train)
-fit3
-anova(fit3)
-# the data shows that we are interested in the following variables
-#temp,yr,season, windspeed,mnth and cnt as the response
-#Explore the full chosen data correlations
-corrData <- train %>% select(cnt,season,yr,temp,windspeed,mnth)
-GGally::ggpairs(corrData)
-#Correlation data table shows that wind speed and nth have the lowest correlation when compared with temperature, year and season. Therefore, we will reduce our variables to temp,yr,season.
-#Now start exploring among these 5 variables for the best fit model
-glm1Fit <- lm(cnt ~ season+yr+temp, data = train)
-glm2Fit <- lm(cnt ~ temp:yr, data = train)
-glm3Fit <- lm(cnt ~ temp:season, data = train)
-glm4Fit <- lm(cnt ~ temp*yr*season, data = train)
-glm5Fit <- lm(cnt ~ temp+yr+I(yr^2), data = train)
+fitlm1 <- train(cnt ~ atemp*season*yr, data = train, 
+                method = "lm", 
+                preProcess = c("center", "scale"),
+                trControl = trainControl(method = "cv", number = 10))
+fitlm1
+
+fitlm2 <- train(cnt ~ atemp + yr + season +windspeed+mnth+holiday+weathersit, data = train, 
+                method = "lm", 
+                preProcess = c("center", "scale"),
+                trControl = trainControl(method = "cv", number = 10))
+fitlm2
+
+fitlm3 <- train(cnt ~ atemp + yr + season +windspeed+weathersit+mnth, data = train, 
+                method = "lm", 
+                preProcess = c("center", "scale"),
+                trControl = trainControl(method = "cv", number = 10))
+fitlm3
+
+fitlm4 <- train(cnt ~ atemp + yr + I(yr^2), data = train, 
+                method = "lm", 
+                preProcess = c("center", "scale"),
+                trControl = trainControl(method = "cv", number = 10))
+fitlm4
+
+```
+
+```{r}
+pred.fitlm1 <- predict(fitlm1, newdata = test)
+rmse1<-postResample(pred.fitlm1, obs = test$cnt)
+
+
+pred.fitlm2 <- predict(fitlm2, newdata = data.frame(test))
+rmse2<-postResample(pred.fitlm2, obs = test$cnt)
+
+pred.fitlm3 <- predict(fitlm3, newdata = data.frame(test))
+rmse3<-postResample(pred.fitlm3, obs = test$cnt)
+
+pred.fitlm4 <- predict(fitlm4, newdata = data.frame(test))
+rmse4<-postResample(pred.fitlm4, obs = test$cnt)
+
+kable(data.frame(rmse1[1], rmse2[1], rmse3[1],rmse4[1]))
+
+```
+
+Summary for the model fit with the lowest cross validation test error(RMSE) : fitlm3
+```{r}
+
+summary(fitlm3)
+
+```
+
+A different approach for selecting the best model for prediction purposes is minimizing test MSE.    
+
+```{r}
+# select multiple random models in addition to the one we picked from the previous study being the first fit(glm1Fit)
+glm1Fit <- lm(cnt ~ atemp + yr + season +windspeed+weathersit+mnth, data = train)
+glm2Fit <- lm(cnt ~ atemp:yr, data = train)
+glm3Fit <- lm(cnt ~ atemp + yr + season, data = train)
+glm4Fit <- lm(cnt ~ atemp*yr*season, data = train)
+glm5Fit <- lm(cnt ~ atemp+yr+I(yr^2), data = train)
 
 model <- c(("glm1Fit"),("glm2Fit"),("glm3Fit"),("glm4Fit"),("glm5Fit"))
   
@@ -332,11 +365,109 @@ rmse(glm5Fit, test)
 )
 MSEdf <- data.frame(model, trainMSE, testMSE)
 MSEdf <- MSEdf %>% arrange(testMSE)
-MSEdf
+kable(data.frame(MSEdf),caption = "Table showing glm1Fit is the best fit")
 
-# therefore, this is the chosen model glm4Fit
-#glm4Fit <- lm(cnt ~ temp*yr*season, data = train)
-#might explore more on top 3 fits which are glm4Fit,glm1it,glm5Fit
+```
+
+Knowing that we can't fully trust test MSE values in order to decide on a model, we will go a step further in developing AIC,BIC and Rsquare Criterias. Using the function from module 9  
+
+```{r}
+compareFitStats <- function(newfit1, newfit2,newfit3,newfit4,newfit5){
+    require(MuMIn)
+    fitStats <- data.frame(fitStat = c("Adj R Square", "AIC", "AICc", "BIC"),
+        col1 = round(c(summary(newfit1)$adj.r.squared, AIC(newfit1), 
+                                    MuMIn::AICc(newfit1), BIC(newfit1)), 3),
+            col2 = round(c(summary(newfit2)$adj.r.squared, AIC(newfit2), 
+                                    MuMIn::AICc(newfit2), BIC(newfit2)), 3),
+                col3 = round(c(summary(newfit3)$adj.r.squared, AIC(newfit3), 
+                                    MuMIn::AICc(newfit3), BIC(newfit3)), 3),
+                    col4 = round(c(summary(newfit4)$adj.r.squared, AIC(newfit4), 
+                                    MuMIn::AICc(newfit4), BIC(newfit4)), 3),
+                        col5 = round(c(summary(newfit5)$adj.r.squared, AIC(newfit5), 
+                                    MuMIn::AICc(newfit5), BIC(newfit5)),3))
+    #put names on returned df
+    calls <- as.list(match.call())
+    calls[[1]] <- NULL
+    names(fitStats)[2:6] <- unlist(calls)
+    fitStats
+}
+
+kable(data.frame(compareFitStats(glm1Fit,glm2Fit,glm3Fit,glm4Fit,glm5Fit)),caption = "Table showing Rsquared,AIC,AICc and BIC criteria")
+
+```
+Again, the calculated criterias shows that glm1Fit (which is the same as fitlm3 model) which represents the 6 predictors , is the best model fit selected.  
+
+An extra step to prove that our choice of glm1Fit as the best fit, here I decided to use the method explained in section 6.5.3 of the book: Choosing Among Models Using the Validation Set Approach (test Dataset) and Cross-Validation.
+
+```{r}
+# we apply regsubsets() to the training set in order to perform best subset selection.
+library(leaps)
+regfit.best=regsubsets (cnt ~ temp + yr + season +windspeed+mnth+holiday+weathersit+atemp,data=train)
+summary(regfit.best)
+
+test.mat=model.matrix(cnt ~ temp + yr + season +windspeed+mnth+holiday+weathersit+atemp,data=test)
+
+val.errors =rep(NA ,8)
+for(i in 1:8)
+{
+    coefi=coef(regfit.best ,id=i)
+    pred=test.mat[,names(coefi)]%*%coefi
+    val.errors[i]=mean(( test$cnt-pred)^2)
+}
+
+val.errors
+
+which.min(val.errors)
+
+```
+Displaying the Selected model with the calculted regression coefficients.  
+
+```{r}
+coef(regfit.best ,6)
+```
+Also another extra verification step by doing the Partial least squares method.  
+
+```{r}
+library(pls)
+set.seed(222)
+ pls.fit=plsr(cnt~ atemp + yr + season +windspeed+mnth+weathersit, data=train, scale=TRUE ,
+validation ="CV")  
+
+summary (pls.fit)
+
+
+validationplot(pls.fit ,val.type="MSEP")
+
+```
+
+The lowest cross-validation error occurs when only M = 4.We now evaluate the corresponding test MSE.
+
+```{r}
+pls.pred=predict (pls.fit ,test,ncomp =4)
+mean((pls.pred -test$cnt)^2)
+MSE.val2 <- sqrt(mean((pls.pred -test$cnt)^2))
+MSE.val2
+```
+We noticed that PLS resulted in a similar value to the previous methods and approaches used.
+
+#### Random Forest  
+Random forest is a tree-based method for regression or classification which involves producing multiple trees known as decision trees to yield a single adequate prediction. ISLR book mentions about decision trees "When building these decision trees, each time a split in a tree is considered, a random sample of m predictors is chosen as split candidates from the full set of p predictors. The split is allowed to use only one of those m predictors. A fresh sample of
+m predictors is taken at each split."
+
+```{r}
+rfTree <- train(cnt ~ atemp + yr + season +windspeed+weathersit+mnth, data = train, method = "rf",
+                trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5),
+                preProcess = c("center", "scale"))
+rfTree
+
+```
+
+Perform prediction on our test data set  
+```{r}
+rfPred <- predict(rfTree, newdata = test)
+rfresult <- postResample(rfPred, test$cnt)
+rfresult
+
 ```
 
 ### Modeling of the second group member
@@ -411,9 +542,9 @@ lmRMSE
 #final model: fit5: cnt ~ I(yr)^2 + season *atemp
 ```
 
-Five candidate linear regression models were fitted using the `train()` function and 10-fold cross-validation. In comparing their RMSE on the test sets, I chose the final model fit5 (cnt ~ I(yr)^2 + season *atemp), which has the lowest RMSE. 
+Five candidate linear regression models were fitted using the `train()` function and 10-fold cross-validation. In comparing their RMSE on the test sets, I chose the final model fit5 (cnt \~ I(yr)\^2 + season \*atemp), which has the lowest RMSE.
 
-We use the train() function to fit the boosted tree model. First, we must give the model and data set we use. Next, we provide the method we use, which is “gbm”. Then, we use the `preProcess()` function to standardize the data. Finally, we specify the type of cross-validation we wish to perform. In our case, we would like to perform repeated cross-validation with 10 folds for 5 times.
+We use the train() function to fit the boosted tree model. First, we must give the model and data set we use. Next, we provide the method we use, which is "gbm". Then, we use the `preProcess()` function to standardize the data. Finally, we specify the type of cross-validation we wish to perform. In our case, we would like to perform repeated cross-validation with 10 folds for 5 times.
 
 ```{r results='hide'}
 #fitting boosted tree model for counts
@@ -437,9 +568,11 @@ boostRMSE <- result[1]
 boostRMSE
 ```
 
-### Comparison of all four models
+### Comparison of all four models and Conclusion  
+Based on the summarized results from the modeling fit portion of this project, we will choose partner_2 model fit as the best fit for this study.  
+
 ```{r}
-results <- data.frame(MSEdf[1,3], lmFit5[1], boostRMSE)
-colnames(results) <- c("lmFit_1stMember", "lmFit_2ndMember", "Boost Tree")
+results <- data.frame(MSEdf[1,3], lmFit5[1], boostRMSE,rfresult[1])
+colnames(results) <- c("lmFit_1stMember", "lmFit_2ndMember", "Boost Tree","Random Forest")
 kable(results)
 ```
