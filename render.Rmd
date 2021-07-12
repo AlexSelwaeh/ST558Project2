@@ -1,0 +1,31 @@
+---
+title: "Project 2"
+author: "Alex Selwaeh and Zichang Xiang"
+date: "7/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#get unique days
+dayIDs <- unique(dayData$status)
+#output_file <- paste0(dayIDs, ".html")
+output_file <- paste0(dayIDs, ".md")
+#create a list for each team with just the day parameter
+params = lapply(dayIDs, FUN = function(x){list(dow = x)})
+#put into a data frame 
+reports <- tibble(output_file, params)
+reports
+```
+
+
+```{r}
+library(rmarkdown)
+#need to use x[[1]] to get at elements since tibble doesn't simplify
+apply(reports, MARGIN = 1, 
+            FUN = function(x){
+                render(input = "ST558Project2.Rmd", output_file=x[[1]] , params = x[[2]])
+                })
