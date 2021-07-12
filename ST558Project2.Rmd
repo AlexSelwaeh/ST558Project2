@@ -1,8 +1,10 @@
 ---
-title: "ST558Project2"
-author: "Alex Selwaeh and Zichang Xiang"
-date: "7/1/2021"
-output: html_document  
+title: "Project2"
+author: "Alex/Zichang"
+date: "7/11/2021"
+output:
+  github_document:
+    toc: true
 params: 
       dow: "Monday"
 ---
@@ -11,15 +13,15 @@ params:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ## Introduction Section
 
 The purpose of this project is to create predictive models and automate R Markdown reports. The data we will use is the number of Bike-sharing users aggregated on daily basis from the Capital Bikeshare system in 2011 and 2012. In this data set, there are 16 variables that are related to bike rental counts. The variables we will use include season, year (yr), mnth, holiday, weekday, workingday, weathersit, hum, atemp, temp, casual, registered, and count (cnt). To model response counts (cnt), we will use linear regression models and ensemble tree methods (random forest method and boosted tree method).
 
 ## Data
 
-```{r message=FALSE}
+```{r librarydefs, message=FALSE}
 #load packages
-library(randomForest)
 library(corrplot)
 library(ggplot2)
 library(cowplot)
@@ -30,12 +32,13 @@ library(knitr)
 library(caret)
 library(tidyr)
 library(purrr)
-library(leaps)
-library(MASS)
 library(gbm)
+library(randomForest)
+library(leaps)
+
 ```
 
-```{r message=FALSE}
+```{r readin, message=FALSE}
 #read in data
 dayData <- read_csv("day.csv")
 dayData
@@ -44,7 +47,7 @@ dayData
 anyNA(dayData)
 
 #create for loop to subset data for each weekday
-status <- vector()
+status<-vector()
 
 for (i in seq_len(nrow(dayData))){
   if(dayData$weekday[i] == 1){
@@ -65,28 +68,22 @@ for (i in seq_len(nrow(dayData))){
 }
 
 dayData$status <- status
-
 #data for the day specified in params
+dayData1 <- dayData
 paramsData <- dayData %>% filter(status == params$dow)
 
 #Create columns to represent the categorical columns as mentioned in READ.ME
 paramsData <- paramsData %>%
   # Add columns to represent the categorical columns as mentioned in READ.ME.
-  mutate(SeasonType = ifelse(season == 1, "spring", 
-                             ifelse(season == 2, "summer",
-                                    ifelse(season == 3, "fall", "winter"))),
-         yearType = ifelse(yr == 0, "2011", "2012"), 
-         workingdayType = ifelse(workingday == 1, "Working Day", "Non WorkingDay"),
-         weathersitType = ifelse(weathersit == 1, "Clear", 
-                                 ifelse(weathersit == 2, "Mist", 
-                                        ifelse(weathersit == 3, "Light Snow", "HeavyRain"))))
+  mutate(SeasonType = ifelse(season == 1, "spring", ifelse(season == 2, "summer", ifelse(season == 3, "fall", "winter"))), yearType= ifelse(yr == 0, "2011", "2012"), workingdayType= ifelse(workingday == 1, "Working Day", "Non WorkingDay"),weathersitType= ifelse(weathersit == 1, "Clear", ifelse(weathersit == 2, "Mist", ifelse(weathersit == 3, "Light Snow", "HeavyRain"))))
 
 #convert month from numerical to categorical charcter  
 paramsData$mnth1 <- as.character(paramsData$mnth)
 
 ```
 
-```{r}
+
+```{r setseeds}
 #split data set into training and test sets
 set.seed(1)
 train <- sample(1:nrow(paramsData), size = nrow(paramsData)*0.7)
@@ -95,7 +92,6 @@ test <- dplyr::setdiff(1:nrow(paramsData), train)
 train <- paramsData[train, ]
 test <- paramsData[test, ]
 
-#view the data sets
 train
 test
 ```
@@ -106,11 +102,11 @@ test
 
 Summary statistics give us a quick look of our data. For our case, we can find out the average number of bike rentals per season.
 
-```{r}
+```{r summarytable}
 # Create a table of summary stats.
 seasonSummary <- train %>% 
   # Select the seasone and cnt columns.
-  dplyr::select(SeasonType, cnt) %>%
+  select(SeasonType, cnt) %>%
   # Group by season
   group_by(SeasonType) %>%
   # Get summary statistics for total users by season.
@@ -124,16 +120,18 @@ seasonSummary <- train %>%
             )
 
 # Display a table of the summary stats.
-kable(seasonSummary, 
-      caption = paste("Summary Statistics for total users", "By Season"), 
-      digits = 2)
+knitr::kable(seasonSummary, 
+             caption=paste("Summary Statistics for total users",
+                           "By Season"),
+             digits=2)
 ```
+
 
 #### Contingency Tables
 
 A continuity table shows the relationship between two categorical variables. In our case, we can determine whether the season and weather are related, and whether the season and workday are related.
 
-```{r}
+```{r contingencytables}
 #create contingency tables
 kable(table(train$SeasonType, train$weathersitType))
 kable(table(train$SeasonType, train$workingdayType))
@@ -144,6 +142,7 @@ kable(table(train$SeasonType, train$workingdayType))
 #### Correlation Plot
 
 Correlation plot shows the strength of a relationship between two variables. In our case, we can identify which variables are highly correlated with one another, especially with the response, the number of bikes rented.
+
 
 ```{r}
 #create correlation plot
@@ -156,144 +155,128 @@ corrplot::corrplot(corr, type = "upper", method = "pie")
 
 Histograms are used to summarize distributions of variables. In our case, we are trying to find out whether the change in each variable has an impact on the number of bikes rented.
 
-```{r message=FALSE}
-#referenced from https://drsimonj.svbtle.com/quick-plot-of-all-variables
+```{r histo, message=FALSE}
+#create boxplots for selected variables (referenced from https://drsimonj.svbtle.com/quick-plot-of-all-variables)
 #reshape the data set
-reshape <- train %>% keep(is.numeric) %>% gather()
-
+reshape <- train %>% keep(is.numeric) %>% gather() 
 #plot the density plot
 g <- ggplot(reshape, aes(x = value))
-g + facet_wrap(~ key, scales = "free") + 
-    geom_density()
+g + facet_wrap(~ key, scales = "free") + geom_density()
+
 ```
+
 
 #### Boxplots
 
 Boxplots show the shape of the distribution of each variable. By looking at the boxplots below, we can see how each variable affects the number of bikes rented.
 
+```{r boxplots, message=FALSE}
+#create boxplot for each variables
+attach(train)
+par(mfrow = c(1,4))
+boxplot(season, xlab = "season")
+boxplot(mnth, xlab =" mnth")
+boxplot(weathersit, xlab = "weathersit")
+boxplot(windspeed, xlab = " windspreed")
+boxplot(yr, xlab = "yr")
+boxplot(temp, xlab = "temp")
+boxplot(atemp, xlab = "atemp")
 
-```{r message=FALSE}
-#referenced from https://drsimonj.svbtle.com/quick-plot-of-all-variables
-#reshape the data set
-reshape <- train %>% keep(is.numeric) %>% gather()
-
-#create boxplots for each variable
-g <- ggplot(reshape, aes(x = value))
-g + facet_wrap(~ key, scales = "free") + 
-    geom_boxplot(aes(x = value))
+#remove outliers
+train <- train[!abs(train$windspeed)>0.4, ]
 ```
 
 Boxplot with the number of users on the y-axis (wether casual,registered or total users) and the season on the x-axis - We can inspect the trend of users across seasons using these plots. Notice that the biggest contribution towards total number of users comes from the registered users which is expected. The most active seasons for that `r params$dow` is the fall season and the least active season is the spring.
 
-```{r}
-#create boxplot plot11
-plot11 <- ggplot(train, aes(SeasonType, cnt, color = cnt)) +
-          geom_boxplot() + 
-          # Jitter the points to add a little more info to the boxplot.
-          geom_jitter() + 
-          # Add labels to the axes.
-          scale_x_discrete("Season") + 
-          scale_y_continuous("Total Users") +
-          ggtitle("Total Users by Season") + 
-          theme(legend.position = "none")
+```{r multiboxplots}
+#create boxplots
+plot11 <- ggplot(train, aes(SeasonType,
+                                   cnt,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Total Users") +
+  ggtitle("Total Users by Season") + theme(legend.position="none")
 plot11
-
-#create boxplot plot12
-plot12 <- ggplot(train, aes(SeasonType, casual, color = cnt)) +
-          geom_boxplot() + 
-          # Jitter the points to add a little more info to the boxplot.
-          geom_jitter() + 
-          # Add labels to the axes.
-          scale_x_discrete("Season") + 
-          scale_y_continuous("Casual Users") +
-          ggtitle("Casual Users by Season") + 
-          theme(legend.position = "none")
+plot12 <- ggplot(train, aes(SeasonType,
+                                   casual,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Casual Users") +
+  ggtitle("Casual Users by Season") + theme(legend.position="none")
 plot12
-
-#create boxplot plot13
-plot13 <- ggplot(train, aes(SeasonType, registered, color = cnt)) +
-          geom_boxplot() + 
-          # Jitter the points to add a little more info to the boxplot.
-          geom_jitter() + 
-          # Add labels to the axes.
-          scale_x_discrete("Season") + 
-          scale_y_continuous("Registered Users") +
-          ggtitle("Registered Users by Season") + 
-          theme(legend.position = "none")
+plot13 <- ggplot(train, aes(SeasonType,
+                                   registered,
+                                   color=cnt)) +
+  geom_boxplot() + 
+  # Jitter the points to add a little more info to the boxplot.
+  geom_jitter() + 
+  # Add labels to the axes.
+  scale_x_discrete("Season") + scale_y_continuous("Registered Users") +
+  ggtitle("Registered Users by Season") + theme(legend.position="none")
 plot13
-
-#combine all three boxplots together
-plot_grid(plot13, plot12, plot11, ncol = 3)
+plot_grid(plot13, plot12,plot11, ncol=3)
 
 ```
 
-#### Scatter plots
+
+#### Scatter plots  
 
 Scatter plot with the total number of users on the y-axis and the temperature, wind speed, humidity on the x-axis - We can inspect the trend of total users across these variables and notice that humidity almost has a slight negative effect on the total number of users. Also it's noticeable that the wind speed has a slight negative effect on the total number of users .  
-```{r}
-#create scatter plot plot21
-plot21 <- ggplot(train, aes(temp, cnt, color = cnt)) + 
-          geom_point(size = 4, alpha = 0.75) + 
-          scale_color_gradient(low = "blue", high = "red") + 
-          theme(legend.position = "none") + 
-          geom_smooth(method = lm, formula = y~x, color = "black") + 
-          scale_x_continuous("Temprature") + 
-          scale_y_continuous("Total Users") + 
-          ggtitle("Temprature. vs. Total Users")
+```{r scatterplots}
+#create scatter plots
+plot21 <- ggplot(train, aes(temp,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Temprature") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Temprature. vs. Total Users")
 plot21
 
-#create scatterplot plot22
-plot22 <- ggplot(train, aes(windspeed, cnt, color = cnt)) + 
-          geom_point(size = 4, alpha = 0.75) + 
-          scale_color_gradient(low = "blue", high = "red") + 
-          theme(legend.position = "none") + 
-          geom_smooth(method = lm, formula = y ~ x, color = "black") + 
-          scale_x_continuous("Wind Speed") + 
-          scale_y_continuous("Total Users") + 
-          ggtitle("Wind Speed vs. Total Users")
+plot22 <- ggplot(train, aes(windspeed,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Wind Speed") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Wind Speed vs. Total Users")
 plot22
 
-#create scatterplot plot23
-plot23 <- ggplot(train, aes(hum, cnt, color = cnt)) + 
-          geom_point(size = 4, alpha = 0.75) + 
-          scale_color_gradient(low = "blue", high = "red") + 
-          theme(legend.position = "none") + 
-          geom_smooth(method = lm, formula = y ~ x, color = "black") + 
-          scale_x_continuous("Humidity") + 
-          scale_y_continuous("Total Users") + 
-          ggtitle("Humidity vs. Total Users")
+plot23 <- ggplot(train, aes(hum,
+                                   cnt,
+                                   color=cnt)) + 
+  geom_point(size=4, alpha=0.75) + scale_color_gradient(low="blue", high="red") + 
+  theme(legend.position="none") + geom_smooth(method=lm, formula=y~x, color="black") + 
+  scale_x_continuous("Humidity") + 
+  scale_y_continuous("Total Users") + 
+  ggtitle("Humidity vs. Total Users")
 plot23
 
-#combine all three scatterplot together
-plot_grid(plot21, plot22, plot23, ncol = 3)
+plot_grid(plot21, plot22, plot23,ncol=3)
 ```
 
 scatterplot with the number of users on the y-axis and the month on the x-axis, We can inspect the trend of users across months using this plot.
 
-```{r}
-#create scatterplot plot31
-plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + 
-          geom_point() +
-          geom_smooth(method = loess, formula = y ~ x) +
-          geom_smooth(method = lm, formula = y ~ x, col = "Red")
-plot31
+```{r scat}
+plot31 <- ggplot(paramsData, aes(x = mnth, y = casual)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot32 <- ggplot(paramsData, aes(x = mnth, y = registered)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) + geom_point() +
+    geom_smooth() +
+    geom_smooth(method = lm, col = "Red")
+plot_grid(plot31, plot32, plot33,ncol=3)
 
-#create scatterplot plot32
-plot32 <- ggplot(paramsData, aes(x = mnth, y = registered)) + 
-          geom_point() +
-          geom_smooth(method = loess, formula = y ~ x) +
-          geom_smooth(method = lm, formula = y ~ x, col = "Red")
-plot32
-
-#create scatterplot plot33
-plot33 <- ggplot(paramsData, aes(x = mnth, y = cnt)) + 
-          geom_point() +
-          geom_smooth(method = loess, formula = y ~ x) +
-          geom_smooth(method = lm, formula = y ~ x, col = "Red")
-plot33
-
-#combine three scatterplots together
-plot_grid(plot31, plot32, plot33, ncol = 3)
 ```
 
 ## Modeling
@@ -330,6 +313,7 @@ fitlm4
 
 ```
 
+<<<<<<< HEAD
 ```{r}
 #predict results using test set
 pred.fitlm1 <- predict(fitlm1, newdata = test)
@@ -351,7 +335,7 @@ kable(data.frame(rmse1[1], rmse2[1], rmse3[1],rmse4[1]))
 ```
 
 Summary for the model fit with the lowest cross validation test error(RMSE) : fitlm3
-```{r}
+```{r partner13}
 
 summary(fitlm3)
 
@@ -359,7 +343,7 @@ summary(fitlm3)
 
 A different approach for selecting the best model for prediction purposes is minimizing test MSE.    
 
-```{r}
+```{r partner14}
 # select multiple random models in addition to the one we picked from the previous study being the first fit(glm1Fit)
 glm1Fit <- lm(cnt ~ atemp + yr + season +windspeed+weathersit+mnth, data = train)
 glm2Fit <- lm(cnt ~ atemp:yr, data = train)
@@ -382,7 +366,7 @@ kable(data.frame(MSEdf),caption = "Table showing glm1Fit is the best fit")
 
 Knowing that we can't fully trust test MSE values in order to decide on a model, we will go a step further in developing AIC,BIC and Rsquare Criterias. Using the function from module 9  
 
-```{r}
+```{r partner15}
 compareFitStats <- function(newfit1, newfit2,newfit3,newfit4,newfit5){
     require(MuMIn)
     fitStats <- data.frame(fitStat = c("Adj R Square", "AIC", "AICc", "BIC"),
@@ -410,6 +394,7 @@ Again, the calculated criterias shows that glm1Fit (which is the same as fitlm3 
 
 An extra step to prove that our choice of glm1Fit as the best fit, here I decided to use the method explained in section 6.5.3 of the book: Choosing Among Models Using the Validation Set Approach (test Dataset) and Cross-Validation.
 
+<<<<<<< HEAD
 ```{r}
 # we apply regsubsets() to the training set in order to perform best subset selection.
 library(leaps)
@@ -445,8 +430,6 @@ library(pls)
 set.seed(222)
  pls.fit=plsr(cnt~ atemp + yr + season +windspeed+mnth+weathersit, data=train, scale=TRUE ,
 validation ="CV")  
-
-summary (pls.fit)
 
 validationplot(pls.fit ,val.type="MSEP")
 
@@ -577,3 +560,4 @@ results <- results %>% gather() %>% arrange(value)
 winner <- results[1, ]
 kable(winner)
 ```
+
