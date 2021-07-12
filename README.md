@@ -21,7 +21,7 @@ Links to the generated analyses:
     
     The analysis for [Sunday is available here](Sunday.md)
 
-Code used to create the analyses: ST558Project2
+Code used to create the analyses: AutomationDraft.Rmd
 
 
 
