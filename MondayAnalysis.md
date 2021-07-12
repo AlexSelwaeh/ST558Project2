@@ -42,20 +42,19 @@ dayData
 ```
 
     ## # A tibble: 731 x 16
-    ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit  temp atemp   hum
-    ##      <dbl> <date>      <dbl> <dbl> <dbl>   <dbl>   <dbl>      <dbl>      <dbl> <dbl> <dbl> <dbl>
-    ##  1       1 2011-01-01      1     0     1       0       6          0          2 0.344 0.364 0.806
-    ##  2       2 2011-01-02      1     0     1       0       0          0          2 0.363 0.354 0.696
-    ##  3       3 2011-01-03      1     0     1       0       1          1          1 0.196 0.189 0.437
-    ##  4       4 2011-01-04      1     0     1       0       2          1          1 0.2   0.212 0.590
-    ##  5       5 2011-01-05      1     0     1       0       3          1          1 0.227 0.229 0.437
-    ##  6       6 2011-01-06      1     0     1       0       4          1          1 0.204 0.233 0.518
-    ##  7       7 2011-01-07      1     0     1       0       5          1          2 0.197 0.209 0.499
-    ##  8       8 2011-01-08      1     0     1       0       6          0          2 0.165 0.162 0.536
-    ##  9       9 2011-01-09      1     0     1       0       0          0          1 0.138 0.116 0.434
-    ## 10      10 2011-01-10      1     0     1       0       1          1          1 0.151 0.151 0.483
-    ## # … with 721 more rows, and 4 more variables: windspeed <dbl>, casual <dbl>, registered <dbl>,
-    ## #   cnt <dbl>
+    ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit  temp atemp   hum windspeed casual
+    ##      <dbl> <date>      <dbl> <dbl> <dbl>   <dbl>   <dbl>      <dbl>      <dbl> <dbl> <dbl> <dbl>     <dbl>  <dbl>
+    ##  1       1 2011-01-01      1     0     1       0       6          0          2 0.344 0.364 0.806    0.160     331
+    ##  2       2 2011-01-02      1     0     1       0       0          0          2 0.363 0.354 0.696    0.249     131
+    ##  3       3 2011-01-03      1     0     1       0       1          1          1 0.196 0.189 0.437    0.248     120
+    ##  4       4 2011-01-04      1     0     1       0       2          1          1 0.2   0.212 0.590    0.160     108
+    ##  5       5 2011-01-05      1     0     1       0       3          1          1 0.227 0.229 0.437    0.187      82
+    ##  6       6 2011-01-06      1     0     1       0       4          1          1 0.204 0.233 0.518    0.0896     88
+    ##  7       7 2011-01-07      1     0     1       0       5          1          2 0.197 0.209 0.499    0.169     148
+    ##  8       8 2011-01-08      1     0     1       0       6          0          2 0.165 0.162 0.536    0.267      68
+    ##  9       9 2011-01-09      1     0     1       0       0          0          1 0.138 0.116 0.434    0.362      54
+    ## 10      10 2011-01-10      1     0     1       0       1          1          1 0.151 0.151 0.483    0.223      41
+    ## # … with 721 more rows, and 2 more variables: registered <dbl>, cnt <dbl>
 
 ``` r
 #check for missing values
@@ -121,42 +120,40 @@ train
 ```
 
     ## # A tibble: 73 x 22
-    ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit  temp atemp   hum
-    ##      <dbl> <date>      <dbl> <dbl> <dbl>   <dbl>   <dbl>      <dbl>      <dbl> <dbl> <dbl> <dbl>
-    ##  1     192 2011-07-11      3     0     7       0       1          1          1 0.762 0.730 0.636
-    ##  2     269 2011-09-26      4     0     9       0       1          1          2 0.649 0.589 0.848
-    ##  3     416 2012-02-20      1     1     2       1       1          0          1 0.28  0.273 0.508
-    ##  4     647 2012-10-08      4     1    10       1       1          0          2 0.383 0.388 0.710
-    ##  5     143 2011-05-23      2     0     5       0       1          1          2 0.632 0.590 0.81 
-    ##  6     626 2012-09-17      3     1     9       0       1          1          2 0.581 0.553 0.735
-    ##  7     654 2012-10-15      4     1    10       0       1          1          2 0.562 0.539 0.708
-    ##  8     451 2012-03-26      2     1     3       0       1          1          1 0.446 0.439 0.478
-    ##  9     430 2012-03-05      1     1     3       0       1          1          1 0.243 0.241 0.506
-    ## 10      38 2011-02-07      1     0     2       0       1          1          1 0.272 0.304 0.738
-    ## # … with 63 more rows, and 10 more variables: windspeed <dbl>, casual <dbl>, registered <dbl>,
-    ## #   cnt <dbl>, status <chr>, SeasonType <chr>, yearType <chr>, workingdayType <chr>,
-    ## #   weathersitType <chr>, mnth1 <chr>
+    ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit  temp atemp   hum windspeed casual
+    ##      <dbl> <date>      <dbl> <dbl> <dbl>   <dbl>   <dbl>      <dbl>      <dbl> <dbl> <dbl> <dbl>     <dbl>  <dbl>
+    ##  1     192 2011-07-11      3     0     7       0       1          1          1 0.762 0.730 0.636    0.282     723
+    ##  2     269 2011-09-26      4     0     9       0       1          1          2 0.649 0.589 0.848    0.111     684
+    ##  3     416 2012-02-20      1     1     2       1       1          0          1 0.28  0.273 0.508    0.229     502
+    ##  4     647 2012-10-08      4     1    10       1       1          0          2 0.383 0.388 0.710    0.190     874
+    ##  5     143 2011-05-23      2     0     5       0       1          1          2 0.632 0.590 0.81     0.234     836
+    ##  6     626 2012-09-17      3     1     9       0       1          1          2 0.581 0.553 0.735    0.152    1022
+    ##  7     654 2012-10-15      4     1    10       0       1          1          2 0.562 0.539 0.708    0.296     760
+    ##  8     451 2012-03-26      2     1     3       0       1          1          1 0.446 0.439 0.478    0.387     795
+    ##  9     430 2012-03-05      1     1     3       0       1          1          1 0.243 0.241 0.506    0.229     203
+    ## 10      38 2011-02-07      1     0     2       0       1          1          1 0.272 0.304 0.738    0.0454    120
+    ## # … with 63 more rows, and 8 more variables: registered <dbl>, cnt <dbl>, status <chr>, SeasonType <chr>,
+    ## #   yearType <chr>, workingdayType <chr>, weathersitType <chr>, mnth1 <chr>
 
 ``` r
 test
 ```
 
     ## # A tibble: 32 x 22
-    ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit  temp atemp   hum
-    ##      <dbl> <date>      <dbl> <dbl> <dbl>   <dbl>   <dbl>      <dbl>      <dbl> <dbl> <dbl> <dbl>
-    ##  1       3 2011-01-03      1     0     1       0       1          1          1 0.196 0.189 0.437
-    ##  2      17 2011-01-17      1     0     1       1       1          0          2 0.176 0.177 0.538
-    ##  3      45 2011-02-14      1     0     2       0       1          1          1 0.415 0.398 0.376
-    ##  4      59 2011-02-28      1     0     2       0       1          1          2 0.407 0.400 0.876
-    ##  5      66 2011-03-07      1     0     3       0       1          1          1 0.262 0.238 0.551
-    ##  6     101 2011-04-11      2     0     4       0       1          1          2 0.596 0.565 0.717
-    ##  7     157 2011-06-06      2     0     6       0       1          1          1 0.678 0.622 0.6  
-    ##  8     262 2011-09-19      3     0     9       0       1          1          2 0.549 0.530 0.69 
-    ##  9     276 2011-10-03      4     0    10       0       1          1          2 0.384 0.392 0.761
-    ## 10     283 2011-10-10      4     0    10       1       1          0          1 0.571 0.543 0.734
-    ## # … with 22 more rows, and 10 more variables: windspeed <dbl>, casual <dbl>, registered <dbl>,
-    ## #   cnt <dbl>, status <chr>, SeasonType <chr>, yearType <chr>, workingdayType <chr>,
-    ## #   weathersitType <chr>, mnth1 <chr>
+    ##    instant dteday     season    yr  mnth holiday weekday workingday weathersit  temp atemp   hum windspeed casual
+    ##      <dbl> <date>      <dbl> <dbl> <dbl>   <dbl>   <dbl>      <dbl>      <dbl> <dbl> <dbl> <dbl>     <dbl>  <dbl>
+    ##  1       3 2011-01-03      1     0     1       0       1          1          1 0.196 0.189 0.437    0.248     120
+    ##  2      17 2011-01-17      1     0     1       1       1          0          2 0.176 0.177 0.538    0.194     117
+    ##  3      45 2011-02-14      1     0     2       0       1          1          1 0.415 0.398 0.376    0.418     208
+    ##  4      59 2011-02-28      1     0     2       0       1          1          2 0.407 0.400 0.876    0.290      81
+    ##  5      66 2011-03-07      1     0     3       0       1          1          1 0.262 0.238 0.551    0.341     244
+    ##  6     101 2011-04-11      2     0     4       0       1          1          2 0.596 0.565 0.717    0.324     855
+    ##  7     157 2011-06-06      2     0     6       0       1          1          1 0.678 0.622 0.6      0.122     673
+    ##  8     262 2011-09-19      3     0     9       0       1          1          2 0.549 0.530 0.69     0.152     691
+    ##  9     276 2011-10-03      4     0    10       0       1          1          2 0.384 0.392 0.761    0.0833    330
+    ## 10     283 2011-10-10      4     0    10       1       1          0          1 0.571 0.543 0.734    0.0423   1514
+    ## # … with 22 more rows, and 8 more variables: registered <dbl>, cnt <dbl>, status <chr>, SeasonType <chr>,
+    ## #   yearType <chr>, workingdayType <chr>, weathersitType <chr>, mnth1 <chr>
 
 ## Summarizations
 
@@ -241,20 +238,13 @@ corr <- cor(train[, -c(1,2,7,17:22)])
 head(round(corr, 2))
 ```
 
-    ##            season    yr  mnth holiday workingday weathersit  temp atemp   hum windspeed casual
-    ## season       1.00 -0.07  0.77   -0.08       0.08       0.05  0.43  0.44  0.34     -0.21   0.25
-    ## yr          -0.07  1.00 -0.02    0.04      -0.04       0.07 -0.14 -0.14 -0.13      0.15   0.09
-    ## mnth         0.77 -0.02  1.00    0.02      -0.02       0.11  0.23  0.26  0.37     -0.30   0.14
-    ## holiday     -0.08  0.04  0.02    1.00      -1.00       0.03 -0.03 -0.05  0.06      0.03   0.36
-    ## workingday   0.08 -0.04 -0.02   -1.00       1.00      -0.03  0.03  0.05 -0.06     -0.03  -0.36
-    ## weathersit   0.05  0.07  0.11    0.03      -0.03       1.00 -0.04 -0.05  0.56     -0.12  -0.01
-    ##            registered   cnt
-    ## season           0.53  0.52
-    ## yr               0.53  0.47
-    ## mnth             0.30  0.30
-    ## holiday         -0.24 -0.09
-    ## workingday       0.24  0.09
-    ## weathersit      -0.11 -0.10
+    ##            season    yr  mnth holiday workingday weathersit  temp atemp   hum windspeed casual registered   cnt
+    ## season       1.00 -0.07  0.77   -0.08       0.08       0.05  0.43  0.44  0.34     -0.21   0.25       0.53  0.52
+    ## yr          -0.07  1.00 -0.02    0.04      -0.04       0.07 -0.14 -0.14 -0.13      0.15   0.09       0.53  0.47
+    ## mnth         0.77 -0.02  1.00    0.02      -0.02       0.11  0.23  0.26  0.37     -0.30   0.14       0.30  0.30
+    ## holiday     -0.08  0.04  0.02    1.00      -1.00       0.03 -0.03 -0.05  0.06      0.03   0.36      -0.24 -0.09
+    ## workingday   0.08 -0.04 -0.02   -1.00       1.00      -0.03  0.03  0.05 -0.06     -0.03  -0.36       0.24  0.09
+    ## weathersit   0.05  0.07  0.11    0.03      -0.03       1.00 -0.04 -0.05  0.56     -0.12  -0.01      -0.11 -0.10
 
 ``` r
 corrplot::corrplot(corr, type = "upper", method = "pie")
@@ -321,8 +311,7 @@ plot11 <- ggplot(train, aes(SeasonType, cnt, color = cnt)) +
 plot11
 ```
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
 ![](MondayAnalysis_files/figure-gfm/unnamed-chunk-37-1.png)<!-- -->
 
@@ -340,8 +329,7 @@ plot12 <- ggplot(train, aes(SeasonType, casual, color = cnt)) +
 plot12
 ```
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
 ![](MondayAnalysis_files/figure-gfm/unnamed-chunk-37-2.png)<!-- -->
 
@@ -359,8 +347,7 @@ plot13 <- ggplot(train, aes(SeasonType, registered, color = cnt)) +
 plot13
 ```
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
 ![](MondayAnalysis_files/figure-gfm/unnamed-chunk-37-3.png)<!-- -->
 
@@ -369,14 +356,11 @@ plot13
 plot_grid(plot13, plot12, plot11, ncol = 3)
 ```
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
 ![](MondayAnalysis_files/figure-gfm/unnamed-chunk-37-4.png)<!-- -->
 
@@ -781,8 +765,8 @@ summary(regfit.best)
 test.mat = model.matrix(cnt ~ temp + yr + season + windspeed + mnth + holiday + weathersit + atemp,
                         data = test)
 
-val.errors = rep(NA, 8)
-for(i in 1:8)
+val.errors = rep(NA, 7)
+for(i in 1:7)
 {
     coefi = coef(regfit.best, id=i)
     pred = test.mat[,names(coefi)]%*%coefi
@@ -792,7 +776,7 @@ for(i in 1:8)
 val.errors
 ```
 
-    ## [1] 2116445 1544246 1404722 1133989 1195584 1193542 1213817 1212941
+    ## [1] 2116445 1544246 1404722 1133989 1195584 1193542 1213817
 
 ``` r
 which.min(val.errors)
@@ -884,8 +868,7 @@ rfTree <- train(cnt ~ atemp + yr + season +windspeed+weathersit+mnth,
                 preProcess = c("center", "scale"))
 ```
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
 ``` r
 rfTree
@@ -1007,8 +990,7 @@ fit <- train(model$terms,
              )
 ```
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
 ``` r
 #view the results
@@ -1051,34 +1033,23 @@ boostFit <- train(model$terms,
                   trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5))
 ```
 
-    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding'
-    ## sampler used
+    ## Warning in (function (kind = NULL, normal.kind = NULL, sample.kind = NULL) : non-uniform 'Rounding' sampler used
 
 ``` r
 #view the results
 boostFit$results
 ```
 
-    ##   shrinkage interaction.depth n.minobsinnode n.trees     RMSE  Rsquared      MAE   RMSESD
-    ## 1       0.1                 1             10      50 700.1466 0.8329942 554.8204 251.9891
-    ## 4       0.1                 2             10      50 681.0214 0.8362609 546.2018 265.6694
-    ## 7       0.1                 3             10      50 703.5064 0.8342147 558.1464 261.5318
-    ## 2       0.1                 1             10     100 670.7945 0.8364762 523.1054 259.7076
-    ## 5       0.1                 2             10     100 662.5384 0.8390647 519.1595 284.2445
-    ## 8       0.1                 3             10     100 681.9405 0.8378108 531.5471 275.1563
-    ## 3       0.1                 1             10     150 671.8800 0.8342237 516.5222 268.0047
-    ## 6       0.1                 2             10     150 663.4825 0.8385763 520.2404 281.2043
-    ## 9       0.1                 3             10     150 681.7687 0.8337107 523.9467 292.9440
-    ##   RsquaredSD    MAESD
-    ## 1  0.1881379 165.2752
-    ## 4  0.1887988 174.3923
-    ## 7  0.1787961 158.1905
-    ## 2  0.1839035 168.2230
-    ## 5  0.1913601 184.0881
-    ## 8  0.1815947 173.0153
-    ## 3  0.1873591 170.7775
-    ## 6  0.1925061 183.3382
-    ## 9  0.1878216 187.9403
+    ##   shrinkage interaction.depth n.minobsinnode n.trees     RMSE  Rsquared      MAE   RMSESD RsquaredSD    MAESD
+    ## 1       0.1                 1             10      50 700.1466 0.8329942 554.8204 251.9891  0.1881379 165.2752
+    ## 4       0.1                 2             10      50 681.0214 0.8362609 546.2018 265.6694  0.1887988 174.3923
+    ## 7       0.1                 3             10      50 703.5064 0.8342147 558.1464 261.5318  0.1787961 158.1905
+    ## 2       0.1                 1             10     100 670.7945 0.8364762 523.1054 259.7076  0.1839035 168.2230
+    ## 5       0.1                 2             10     100 662.5384 0.8390647 519.1595 284.2445  0.1913601 184.0881
+    ## 8       0.1                 3             10     100 681.9405 0.8378108 531.5471 275.1563  0.1815947 173.0153
+    ## 3       0.1                 1             10     150 671.8800 0.8342237 516.5222 268.0047  0.1873591 170.7775
+    ## 6       0.1                 2             10     150 663.4825 0.8385763 520.2404 281.2043  0.1925061 183.3382
+    ## 9       0.1                 3             10     150 681.7687 0.8337107 523.9467 292.9440  0.1878216 187.9403
 
 ``` r
 #view the best model

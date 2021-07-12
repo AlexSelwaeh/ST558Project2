@@ -2,11 +2,7 @@
 title: "Project 2"
 author: "Alex Selwaeh and Zichang Xiang"
 date: "7/1/2021"
-output:  
-  html_document:  
-    self_contained: true
-params: 
-  dow: ""
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -14,19 +10,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-
 library(tidyverse)
-library(rmarkdown)
 ```
 
 ```{r}
-#create a list for weekdays
-weekday <- c("Monday")
-             #, "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
-#create output file name
-output_file <- paste0(weekday, "Analysis.md")
+#get unique days
+dayIDs <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+#output_file <- paste0(dayIDs, ".html")
+output_file <- paste0(dayIDs, "Analysis.md")
 #create a list for each team with just the day parameter
-params <- lapply(weekday, FUN = function(x){list(dow = x)})
+params = lapply(dayIDs, FUN = function(x){list(dow = x)})
 #put into a data frame 
 reports <- tibble(output_file, params)
 reports
@@ -34,9 +27,9 @@ reports
 
 
 ```{r}
-#use apply function to generate documents
+library(rmarkdown)
 apply(reports, MARGIN = 1, 
             FUN = function(x){
-                render(input = "ST558Project2.Rmd", output_file=x[[1]] , params = x[[2]]
-                )})
+                render(input = "ST558Project2.Rmd", output_file=x[[1]] , params = x[[2]])
+                })
 ```
