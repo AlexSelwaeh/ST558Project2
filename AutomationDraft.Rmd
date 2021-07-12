@@ -10,16 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
-<<<<<<< HEAD
 library(tidyverse)
 ```
-=======
-#get unique days
-dayIDs <- unique(dayData$status)
-
-#output_file <- paste0(dayIDs, ".html")
-output_file <- paste0(dayIDs, ".md")
->>>>>>> 294cae097400b7f6c3a83941abf170fbcf8e5e5d
 
 ```{r}
 #get unique days
